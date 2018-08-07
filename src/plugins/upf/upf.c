@@ -870,9 +870,9 @@ VLIB_CLI_COMMAND (upf_delete_app_command, static) =
 /* *INDENT-ON* */
 
 static clib_error_t *
-upf_create_delete_rule_command_fn (vlib_main_t * vm,
-                                   unformat_input_t * input,
-                                   vlib_cli_command_t * cmd)
+upf_application_rule_add_del_command_fn (vlib_main_t * vm,
+                                         unformat_input_t * input,
+                                         vlib_cli_command_t * cmd)
 {
   unformat_input_t _line_input, *line_input = &_line_input;
   u8 *app_name = NULL;
@@ -919,11 +919,11 @@ upf_create_delete_rule_command_fn (vlib_main_t * vm,
 }
 
 /* *INDENT-OFF* */
-VLIB_CLI_COMMAND (upf_create_delete_rule_command, static) =
+VLIB_CLI_COMMAND (upf_application_rule_add_del_command, static) =
 {
   .path = "upf application",
   .short_help = "upf application <name> rule <id> [ <rule> | del ]",
-  .function = upf_create_delete_rule_command_fn,
+  .function = upf_application_rule_add_del_command_fn,
 };
 /* *INDENT-ON* */
 
