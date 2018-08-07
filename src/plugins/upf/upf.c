@@ -788,24 +788,24 @@ upf_create_app_command_fn (vlib_main_t * vm,
 
   /* Get a line of input. */
   if (unformat_user (input, unformat_line_input, line_input))
-  {
-    while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
     {
-      if (unformat (line_input, "%s", &name))
-      {
-        app->name = vec_dup(name);
-        hash_set_mem (sm->upf_app_by_name, app->name, app - sm->upf_apps);
-      }
-      else
-      {
-        unformat_free (line_input);
-        return clib_error_return (0, "unknown input `%U'",
-        format_unformat_error, input);
-      }
-    }
+      while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
+        {
+          if (unformat (line_input, "%s", &name))
+            {
+              app->name = vec_dup(name);
+              hash_set_mem (sm->upf_app_by_name, app->name, app - sm->upf_apps);
+            }
+          else
+            {
+              unformat_free (line_input);
+              return clib_error_return (0, "unknown input `%U'",
+              format_unformat_error, input);
+            }
+       }
 
-    unformat_free (line_input);
-  }
+      unformat_free (line_input);
+    }
 
   return NULL;
 }
@@ -832,30 +832,30 @@ upf_delete_app_command_fn (vlib_main_t * vm,
 
   /* Get a line of input. */
   if (unformat_user (input, unformat_line_input, line_input))
-  {
-    while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
     {
-      if (unformat (line_input, "%s", &name))
-      {
-        p = hash_get_mem (sm->upf_app_by_name, name);
-        if (p)
+      while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
         {
-          hash_unset_mem (sm->upf_app_by_name, name);
-          app = pool_elt_at_index (sm->upf_apps, p[0]);
-          vec_free (app->name);
-          pool_put (sm->upf_apps, app);
+          if (unformat (line_input, "%s", &name))
+            {
+              p = hash_get_mem (sm->upf_app_by_name, name);
+              if (p)
+                {
+                  hash_unset_mem (sm->upf_app_by_name, name);
+                  app = pool_elt_at_index (sm->upf_apps, p[0]);
+                  vec_free (app->name);
+                  pool_put (sm->upf_apps, app);
+                }
+            }
+          else
+            {
+              unformat_free (line_input);
+              return clib_error_return (0, "unknown input `%U'",
+              format_unformat_error, input);
+            }
         }
-      }
-      else
-      {
-        unformat_free (line_input);
-        return clib_error_return (0, "unknown input `%U'",
-        format_unformat_error, input);
-      }
-    }
 
-    unformat_free (line_input);
-  }
+      unformat_free (line_input);
+    }
 
   return NULL;
 }
@@ -883,37 +883,37 @@ upf_application_rule_add_del_command_fn (vlib_main_t * vm,
 
   /* Get a line of input. */
   if (unformat_user (input, unformat_line_input, line_input))
-  {
-    while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
     {
-      if (unformat (line_input, "%s rule %u %s",
-                    &app_name, &rule_index, &rule_name))
-      {
-        index = hash_get_mem (sm->upf_app_by_name, app_name);
-        if (index)
+      while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
         {
-          vlib_cli_output (vm, "Application %s is present", app_name);
-
-          if (strcmp ((char*)rule_name, "del") == 0)
-          {
-            vlib_cli_output (vm, "Delete rule");
-          }
+          if (unformat (line_input, "%s rule %u %s",
+                        &app_name, &rule_index, &rule_name))
+            {
+              index = hash_get_mem (sm->upf_app_by_name, app_name);
+              if (index)
+              {
+                vlib_cli_output (vm, "Application %s is present", app_name);
+      
+                if (strcmp ((char*)rule_name, "del") == 0)
+                  {
+                    vlib_cli_output (vm, "Delete rule");
+                  }
+                else
+                  {
+                    vlib_cli_output (vm, "Add rule");
+                  }
+              }
+            }
           else
-          {
-            vlib_cli_output (vm, "Add rule");
-          }
+            {
+              unformat_free (line_input);
+              return clib_error_return (0, "unknown input `%U'",
+              format_unformat_error, input);
+            }
         }
-      }
-      else
-      {
-        unformat_free (line_input);
-        return clib_error_return (0, "unknown input `%U'",
-        format_unformat_error, input);
-      }
+  
+      unformat_free (line_input);
     }
-
-    unformat_free (line_input);
-  }
 
   return NULL;
 }
@@ -939,27 +939,27 @@ upf_show_app_command_fn (vlib_main_t * vm,
 
   /* Get a line of input. */
   if (unformat_user (input, unformat_line_input, line_input))
-  {
-    while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
     {
-      if (unformat (line_input, "%s", &name))
-      {
-        index = hash_get_mem (sm->upf_app_by_name, name);
-        if (index)
+      while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
         {
-          vlib_cli_output (vm, "Application %s is present", name);
+          if (unformat (line_input, "%s", &name))
+            {
+              index = hash_get_mem (sm->upf_app_by_name, name);
+              if (index)
+                {
+                  vlib_cli_output (vm, "Application %s is present", name);
+                }
+            }
+          else
+            {
+              unformat_free (line_input);
+              return clib_error_return (0, "unknown input `%U'",
+              format_unformat_error, input);
+            }
         }
-      }
-      else
-      {
-        unformat_free (line_input);
-        return clib_error_return (0, "unknown input `%U'",
-        format_unformat_error, input);
-      }
-    }
 
-    unformat_free (line_input);
-  }
+      unformat_free (line_input);
+    }
 
   return NULL;
 }
