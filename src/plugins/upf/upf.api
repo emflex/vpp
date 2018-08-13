@@ -30,6 +30,20 @@ autoreply define upf_app_add_del {
   u8 is_add;
 };
 
+autoreply define upf_app_ip_rule_add_del {
+  u32 client_index;
+  u32 context;
+
+  u8 app[64];
+  u32 id;
+  u8 is_ipv6;
+  u8 src_ip_addr[16];
+  u8 src_ip_prefix_len;
+  u8 dst_ip_addr[16];
+  u8 dst_ip_prefix_len;
+  u8 is_add;
+};
+
 autoreply define upf_app_l7_rule_add_del {
   u32 client_index;
   u32 context;
@@ -41,5 +55,3 @@ autoreply define upf_app_l7_rule_add_del {
   u8 path[256];
   u8 is_add;
 };
-
-
