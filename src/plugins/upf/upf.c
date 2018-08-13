@@ -49,11 +49,12 @@ int upf_app_add_del (upf_main_t * sm, u8 * name, int add)
   return rv;
 }
 
-int upf_rule_add_del (upf_main_t * sm, u8 * name, u32 id, int add)
+int upf_rule_add_del (upf_main_t * sm, u8 * name, u32 id,
+                      int add, upf_rule_args_t * args)
 {
   int rv = 0;
 
-  rv = vnet_upf_rule_add_del(name, id, add, NULL);
+  rv = vnet_upf_rule_add_del(name, id, add, args);
 
   return rv;
 }

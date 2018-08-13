@@ -107,11 +107,14 @@ static void vl_api_upf_app_l7_rule_add_del_t_handler
 (vl_api_upf_app_l7_rule_add_del_t * mp)
 {
   vl_api_upf_app_l7_rule_add_del_reply_t * rmp = NULL;
+  upf_rule_args_t args = {};
   upf_main_t * sm = &upf_main;
   int rv = 0;
 
+  args.host = mp->host;
+  args.path = mp->path;
   rv = upf_rule_add_del (sm, mp->app, mp->id, 
-                         (int) (mp->is_add));
+                         (int) (mp->is_add), &args);
 
   REPLY_MACRO(VL_API_UPF_APP_ADD_DEL_REPLY);
 }
