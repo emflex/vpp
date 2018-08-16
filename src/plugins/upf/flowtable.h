@@ -200,15 +200,4 @@ typedef struct {
     u16 msg_id_base;
 } flowtable_main_t;
 
-extern flowtable_main_t flowtable_main;
-extern vlib_node_registration_t flowtable_node;
-
-/* API functions */
-int
-flowtable_enable_disable(flowtable_main_t * fm, u32 sw_if_index, int enable_disable);
-
-int
-flowtable_update(u8 is_ip4, u8 ip_src[16], u8 ip_dst[16], u8 ip_upper_proto,
-    u16 port_src, u16 port_dst, u16 lifetime, u8 offloaded, u8 infos[16]);
-
 #endif  /* __flowtable_h__ */

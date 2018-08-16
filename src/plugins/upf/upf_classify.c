@@ -33,6 +33,9 @@
 #include <upf/upf_pfcp.h>
 #include <upf/upf_http_redirect_server.h>
 
+//#include <upf/flowtable.h>
+//#include <upf/flowtable_impl.h>
+
 #if CLIB_DEBUG > 0
 #define gtp_debug clib_warning
 #else
@@ -190,6 +193,9 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 #if CLIB_DEBUG > 0
 		  ip4_header_t *ip4 = (ip4_header_t *)pl;
 #endif
+    //  uword is_reverse;
+     // flow_signature_t sig;
+		//compute_packet_hash(b, &is_reverse, &sig);
 
 		  rte_acl_classify(acl, data, results, 1, 1);
 		  gtp_debug("Ctx: %p, src: %U, dst %U, r: %d\n",
