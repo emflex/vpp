@@ -31,6 +31,9 @@
 #include <upf/pfcp.h>
 #include <upf/upf_pfcp_server.h>
 
+#include "flowtable.h"
+#include <upf/flowtable_impl.h>
+
 /* Action function shared between message handler and debug CLI */
 
 static int
@@ -1314,6 +1317,8 @@ static clib_error_t * upf_init (vlib_main_t * vm)
 
   sm->upf_app_by_name = hash_create_vec ( /* initial length */ 32,
                                       sizeof (u8), sizeof (uword));
+
+  flowtable_init(vm);
 
   return sx_server_main_init(vm);
 }

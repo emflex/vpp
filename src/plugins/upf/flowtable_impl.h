@@ -25,14 +25,17 @@
 #include "flowtable.h"
 #include "flowtable_tcp.h"
 
-static u64 flow_id = 0;
-static flowtable_main_t flowtable_main;
+extern u64 flow_id;
+extern flowtable_main_t flowtable_main;
 
 typedef struct {
     u32 sw_if_index;
     u32 next_index;
     u32 offloaded;
 } flow_trace_t;
+
+clib_error_t *
+flowtable_init(vlib_main_t * vm);
 
 always_inline u64
 hash_signature(flow_signature_t const * sig)
@@ -144,84 +147,7 @@ compute_packet_hash(vlib_buffer_t * buffer, uword * is_reverse, flow_signature_t
     return 0;
 }
 
-int
-flowtable_update(u8 is_ip4, u8 ip_src[16], u8 ip_dst[16], u8 ip_upper_proto,
-    u16 port_src, u16 port_dst, u16 lifetime, u8 offloaded, u8 infos[16])
-{
-    flow_signature_t sig;
-    flow_entry_t * flow;
-    BVT(clib_bihash_kv) kv;
-    flowtable_main_t * fm = &flowtable_main;
-    vlib_thread_main_t * tm = vlib_get_thread_main();
-    uword cpu_index;
 
-    if (is_ip4)
-    {
-        sig.len = sizeof(struct ip4_sig);
-        clib_memcpy(&sig.s.ip4.src, ip_src, 4);
-        clib_memcpy(&sig.s.ip4.dst, ip_dst, 4);
-        sig.s.ip4.proto = ip_upper_proto;
-        sig.s.ip4.port_src = port_src;
-        sig.s.ip4.port_dst = port_dst;
-    } else {
-        sig.len = sizeof(struct ip6_sig);
-        clib_memcpy(&sig.s.ip6.src, ip_src, 16);
-        clib_memcpy(&sig.s.ip6.dst, ip_dst, 16);
-        sig.s.ip6.proto = ip_upper_proto;
-        sig.s.ip6.port_src = port_src;
-        sig.s.ip6.port_dst = port_dst;
-    }
-
-    flow = NULL;
-    kv.key = hash_signature(&sig);
-
-    /* TODO: recover handoff dispatch fun to get the correct node index */
-    for (cpu_index = 0; cpu_index < tm->n_vlib_mains; cpu_index++)
-    {
-        flowtable_main_per_cpu_t * fmt = &fm->per_cpu[cpu_index];
-        if (fmt == NULL)
-            continue;
-
-        if (PREDICT_FALSE(BV(clib_bihash_search) (&fmt->flows_ht, &kv, &kv)))
-        {
-            continue;
-        } else {
-            dlist_elt_t * ht_line;
-            u32 index;
-            u32 ht_line_head_index;
-
-            flow = NULL;
-            ht_line_head_index = (u32) kv.value;
-            if (dlist_is_empty(fmt->ht_lines, ht_line_head_index))
-                continue;
-
-            ht_line = pool_elt_at_index(fmt->ht_lines, ht_line_head_index);
-            index = ht_line->next;
-            while (index != ht_line_head_index)
-            {
-                dlist_elt_t * e = pool_elt_at_index(fmt->ht_lines, index);
-                flow = pool_elt_at_index(fm->flows, e->value);
-                if (PREDICT_TRUE(memcmp(&flow->sig, &sig, sig.len) == 0))
-                    break;
-
-                index = e->next;
-            }
-        }
-    }
-
-    if (PREDICT_FALSE(flow == NULL))
-        return -1;  /* flow not found */
-
-    if (lifetime != (u16) ~0)
-    {
-        ASSERT(lifetime < TIMER_MAX_LIFETIME);
-        flow->lifetime = lifetime;
-    }
-    flow->infos.data.offloaded = offloaded;
-    clib_memcpy(flow->infos.data.opaque, infos, sizeof(flow->infos.data.opaque));
-
-    return 0;
-}
 
 always_inline timeout_msg_t *
 timeout_msg_get(flowtable_main_t * fm)

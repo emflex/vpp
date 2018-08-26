@@ -33,8 +33,8 @@
 #include <upf/upf_pfcp.h>
 #include <upf/upf_http_redirect_server.h>
 
-//#include <upf/flowtable.h>
-//#include <upf/flowtable_impl.h>
+#include <upf/flowtable.h>
+#include <upf/flowtable_impl.h>
 
 #if CLIB_DEBUG > 0
 #define gtp_debug clib_warning
@@ -115,6 +115,18 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
   struct rte_acl_ctx *acl;
   uint32_t results[1]; /* make classify by 4 categories. */
   const u8 *data[4];
+  flow_entry_t *flow = NULL;
+  uword is_reverse = 0;
+  flow_signature_t sig;
+  BVT(clib_bihash_kv) kv;
+  int created = 0;
+  flowtable_main_t * fm = &flowtable_main;
+  flowtable_main_per_cpu_t * fmt = &fm->per_cpu[0];
+
+  u32 current_time =
+      (u32) ((u64) fm->vlib_main->cpu_time_last_node_dispatch /
+      fm->vlib_main->clib_time.clocks_per_second);
+  timer_wheel_index_update(fmt, current_time);
 
   next_index = node->cached_next_index;
   stats_sw_if_index = node->runtime_data[0];
@@ -143,6 +155,14 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  n_left_to_next -= 1;
 
 	  b = vlib_get_buffer (vm, bi);
+
+		kv.key = compute_packet_hash(b, &is_reverse, &sig);
+		flow = flowtable_entry_lookup_create(fm, fmt, &kv, &sig, current_time, &created);
+
+		if (flow)
+		{
+			
+		}
 
 	  /* Get next node index and adj index from tunnel next_dpo */
 	  sidx = vnet_buffer (b)->gtpu.session_index;
@@ -193,9 +213,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 #if CLIB_DEBUG > 0
 		  ip4_header_t *ip4 = (ip4_header_t *)pl;
 #endif
-    //  uword is_reverse;
-     // flow_signature_t sig;
-		//compute_packet_hash(b, &is_reverse, &sig);
 
 		  rte_acl_classify(acl, data, results, 1, 1);
 		  gtp_debug("Ctx: %p, src: %U, dst %U, r: %d\n",
