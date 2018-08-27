@@ -21,6 +21,7 @@
 
 #include "flowtable.h"
 #include "flowtable_tcp.h"
+#include "flowtable_impl.h"
 
 u64 flow_id = 0;
 flowtable_main_t flowtable_main;
@@ -108,7 +109,7 @@ flowtable_init(vlib_main_t * vm)
     return error;
 }
 
-static int
+int
 flowtable_update(u8 is_ip4, u8 ip_src[16], u8 ip_dst[16], u8 ip_upper_proto,
     u16 port_src, u16 port_dst, u16 lifetime, u8 offloaded, u8 infos[16])
 {
