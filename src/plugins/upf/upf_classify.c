@@ -159,9 +159,9 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		kv.key = compute_packet_hash(b, &is_reverse, &sig);
 		flow = flowtable_entry_lookup_create(fm, fmt, &kv, &sig, current_time, &created);
 
-		if (flow)
+		if (!flow)
 		{
-			
+			continue;
 		}
 
 	  /* Get next node index and adj index from tunnel next_dpo */
@@ -193,7 +193,9 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		    {
 		      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
 		      far = sx_get_far_by_id(active, pdr->far_id);
+					upf_app_run_rules(pdr->pdi.app_id);
 		    }
+			
 		}
 	    }
 	  else

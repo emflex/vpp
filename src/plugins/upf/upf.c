@@ -34,6 +34,27 @@
 #include "flowtable.h"
 #include <upf/flowtable_impl.h>
 
+int 
+upf_app_run_rules(u32 app_id)
+{
+  upf_main_t *sm = &upf_main;
+  upf_dpi_app_t *app = NULL;
+  u32 index = 0;
+  u32 rule_index = 0;
+  upf_dpi_rule_t *rule = NULL;
+
+  app = pool_elt_at_index (sm->upf_apps, app_id);
+
+  /* *INDENT-OFF* */
+  hash_foreach(rule_index, index, app->rules_by_id,
+  ({
+     rule = pool_elt_at_index(app->rules, index);
+  }));
+  /* *INDENT-ON* */
+
+  return 0;
+}
+
 /* Action function shared between message handler and debug CLI */
 
 static int

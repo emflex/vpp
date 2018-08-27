@@ -123,6 +123,8 @@ typedef struct flow_entry {
      * - it SHOULD be less than 24Bytes so that it can fit into
      * the plugins_data field */
     flow_data_t infos;
+
+    u8 *app_name;
 } flow_entry_t;
 
 /* Timers (in seconds) */
