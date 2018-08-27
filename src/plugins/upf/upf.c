@@ -1290,6 +1290,65 @@ VLIB_CLI_COMMAND (upf_show_apps_command, static) =
 };
 /* *INDENT-ON* */
 
+static void
+foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg)
+{
+  dlist_elt_t *ht_line = NULL;
+  u32 index = 0;
+  flow_entry_t *flow = NULL;
+  vlib_main_t *vm = arg;
+  u32 ht_line_head_index = (u32) kvp->value;
+  flowtable_main_t * fm = &flowtable_main;
+  flowtable_main_per_cpu_t * fmt = &fm->per_cpu[0];
+
+  if (dlist_is_empty(fmt->ht_lines, ht_line_head_index))
+    return;
+
+  ht_line = pool_elt_at_index(fmt->ht_lines, ht_line_head_index);
+  index = ht_line->next;
+
+  while (index != ht_line_head_index)
+    {
+      dlist_elt_t * e = pool_elt_at_index(fmt->ht_lines, index);
+      flow = pool_elt_at_index(fm->flows, e->value);
+
+      index = e->next;
+
+      vlib_cli_output (vm, "%llu: proto 0x%x, %U(%u) <-> %U(%u), packets %u, ttl %u",
+                       flow->infos.data.flow_id,
+                       flow->sig.s.ip4.proto,
+                       format_ip4_address, &flow->sig.s.ip4.src,
+                       ntohs(flow->sig.s.ip4.port_src),
+                       format_ip4_address, &flow->sig.s.ip4.dst,
+                       ntohs(flow->sig.s.ip4.port_dst),
+                       flow->stats[0].pkts + flow->stats[1].pkts,
+                       flow->expire);
+    }
+}
+
+static clib_error_t *
+upf_show_flows_command_fn (vlib_main_t * vm,
+                           unformat_input_t * input,
+                           vlib_cli_command_t * cmd)
+{
+  flowtable_main_t * fm = &flowtable_main;
+  flowtable_main_per_cpu_t * fmt = &fm->per_cpu[0];
+
+  BV (clib_bihash_foreach_key_value_pair) (&fmt->flows_ht,
+                                      foreach_upf_flows, vm);
+
+  return NULL;
+}
+
+/* *INDENT-OFF* */
+VLIB_CLI_COMMAND (upf_show_flows_command, static) =
+{
+  .path = "show upf flows",
+  .short_help = "show upf flows",
+  .function = upf_show_flows_command_fn,
+};
+/* *INDENT-ON* */
+
 static clib_error_t * upf_init (vlib_main_t * vm)
 {
   upf_main_t * sm = &upf_main;
