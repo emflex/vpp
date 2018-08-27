@@ -121,36 +121,24 @@ parse_ip6_packet(ip6_header_t * ip6, uword * is_reverse, struct ip6_sig * ip6_si
 }
 
 static inline u64
-compute_packet_hash(vlib_buffer_t * buffer, uword * is_reverse, flow_signature_t * sig)
+compute_packet_hash(vlib_buffer_t * buffer, u8 is_ip4, uword * is_reverse,
+                    flow_signature_t * sig)
 {
-    ethernet_header_t * eth = (ethernet_header_t *)(buffer->data + buffer->current_data);
-
-    if (PREDICT_TRUE(eth->type == clib_host_to_net_u16(ETHERNET_TYPE_IP6)
-        || eth->type == clib_host_to_net_u16(ETHERNET_TYPE_IP4)))
+  if (PREDICT_TRUE(is_ip4))
     {
-        vlib_buffer_advance(buffer, sizeof(ethernet_header_t));
-
-        /* compute 5 tuple key so that 2 half connections
-         * get into the same flow */
-        if (PREDICT_TRUE(eth->type == clib_host_to_net_u16(ETHERNET_TYPE_IP4)))
-        {
-            sig->len = sizeof(struct ip4_sig);
-            parse_ip4_packet(vlib_buffer_get_current(buffer),
-                    is_reverse, (struct ip4_sig *) sig);
-        } else if (eth->type == clib_host_to_net_u16(ETHERNET_TYPE_IP6)) {
-            sig->len = sizeof(struct ip6_sig);
-            parse_ip6_packet(vlib_buffer_get_current(buffer),
-                    is_reverse, (struct ip6_sig *) sig);
-        }
-
-        return hash_signature(sig);
+      sig->len = sizeof(struct ip4_sig);
+      parse_ip4_packet(vlib_buffer_get_current(buffer),
+              is_reverse, (struct ip4_sig *) sig);
+    }
+  else
+    {
+      sig->len = sizeof(struct ip6_sig);
+      parse_ip6_packet(vlib_buffer_get_current(buffer),
+              is_reverse, (struct ip6_sig *) sig);
     }
 
-    sig->len = 0;
-    return 0;
+  return hash_signature(sig);
 }
-
-
 
 always_inline timeout_msg_t *
 timeout_msg_get(flowtable_main_t * fm)
