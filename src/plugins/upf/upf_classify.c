@@ -121,7 +121,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
   BVT(clib_bihash_kv) kv;
   int created = 0;
   flowtable_main_t * fm = &flowtable_main;
-  flowtable_main_per_cpu_t * fmt = &fm->per_cpu[0];
+  flowtable_per_session_t * fmt = &fm->per_session[0];
 
   u32 current_time =
       (u32) ((u64) fm->vlib_main->cpu_time_last_node_dispatch /
