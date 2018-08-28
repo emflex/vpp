@@ -197,7 +197,14 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		    {
 		      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
 		      far = sx_get_far_by_id(active, pdr->far_id);
-					upf_app_run_rules(pdr->pdi.app_id);
+					
+					pfcp_application_id_t *app_id;
+
+					vec_foreach(app_id, pdr->pdi.app_id)
+						{
+							upf_app_run_rules(*app_id);
+						}
+					
 		    }
 			
 		}

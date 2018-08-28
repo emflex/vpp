@@ -38,15 +38,20 @@ static void
 foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg);
 
 int 
-upf_app_run_rules(u32 app_id)
+upf_app_run_rules(u8 * app_name)
 {
   upf_main_t *sm = &upf_main;
   upf_dpi_app_t *app = NULL;
   u32 index = 0;
   u32 rule_index = 0;
   upf_dpi_rule_t *rule = NULL;
+  uword *p = NULL;
 
-  app = pool_elt_at_index (sm->upf_apps, app_id);
+  p = hash_get_mem (sm->upf_app_by_name, app_name);
+  if (!p)
+    return VNET_API_ERROR_NO_SUCH_ENTRY;
+
+  app = pool_elt_at_index (sm->upf_apps, p[0]);
 
   /* *INDENT-OFF* */
   hash_foreach(rule_index, index, app->rules_by_id,
