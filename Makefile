@@ -145,6 +145,7 @@ FORCE=--force-yes
 endif
 
 TARGETS = vpp
+TARGETS += hyperscan-install-dev
 
 ifneq ($(SAMPLE_PLUGIN),no)
 TARGETS += sample-plugin
@@ -455,8 +456,11 @@ pkg-rpm: dist
 pkg-srpm: dist
 	make -C extras/rpm srpm
 
-dpdk-install-dev:
-	make -C dpdk install-$(PKG)
+#dpdk-install-dev:
+#	make -C dpdk install-$(PKG)
+
+hyperscan-install-dev:
+	make -C hyperscan install-$(PKG)
 
 ctags: ctags.files
 	@ctags --totals --tag-relative -L $<
@@ -503,7 +507,7 @@ define banner
 	@echo " "
 endef
 
-verify: install-dep $(BR)/.deps.ok dpdk-install-dev
+verify: install-dep $(BR)/.deps.ok hyperscan-install-dev
 	$(call banner,"Building for PLATFORM=vpp using gcc")
 	@make -C build-root PLATFORM=vpp TAG=vpp wipe-all install-packages
 ifeq ($(OS_ID)-$(OS_VERSION_ID),ubuntu-16.04)

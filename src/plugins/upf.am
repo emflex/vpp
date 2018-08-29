@@ -30,9 +30,13 @@ upf_plugin_la_LDFLAGS += -Wl,--exclude-libs,libisal_crypto.a,-l:libisal_crypto.a
 endif
 
 upf_plugin_la_CFLAGS = $(AM_CFLAGS)
+
 upf_plugin_la_LDFLAGS += -Wl,-lnuma
 upf_plugin_la_LDFLAGS += -Wl,-lm,-ldl
 upf_plugin_la_LIBADD =
+
+upf_plugin_la_CFLAGS += -I/usr/local/include/hs/
+upf_plugin_la_LDFLAGS += -lhs
 
 upf_plugin_la_SOURCES = \
   upf/node.c \
