@@ -31,8 +31,10 @@ static hs_scratch_t *scratch = NULL;
 static const char *patterns[UPF_DPI_REGEX_NUM_MAX] = {};
 static unsigned patterns_ids[UPF_DPI_REGEX_NUM_MAX] = {};
 static unsigned flags[UPF_DPI_REGEX_NUM_MAX] = {};
+static u8* names[UPF_DPI_REGEX_NUM_MAX] = {};
 
-int upf_dpi_add_multi_regex(u8 * app_name, u8 * regex_array, int regex_num)
+int
+upf_dpi_add_multi_regex(u8 * app_name, u8 * regex_array, int regex_num)
 {
   int i = 0;
   u8 length = 0;
@@ -64,6 +66,36 @@ int upf_dpi_add_multi_regex(u8 * app_name, u8 * regex_array, int regex_num)
     {
       hs_free_database(database);
       database = NULL;
+      return -1;
+    }
+
+  return 0;
+}
+
+static int
+upf_dpi_event_handler(unsigned int id, unsigned long long from,
+                                 unsigned long long to, unsigned int flags,
+                                void *ctx)
+{
+  (void) from;
+  (void) to;
+  (void) flags;
+
+  char **name = (char**)ctx;
+
+  *name = names[id];
+
+  return 0;
+}
+
+int
+upf_dpi_lookup(u8 * str, uint16_t length, char **app_name)
+{
+  int ret = 0;
+
+  ret = hs_scan(database, str, length, 0, scratch, upf_dpi_event_handler, (void*)app_name);
+    if (ret != HS_SUCCESS)
+    {
       return -1;
     }
 

@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __included_dpi_h__
-#define __included_dpi_h__
+#ifndef __included_upf_dpi_h__
+#define __included_upf_dpi_h__
 
 int upf_dpi_add_multi_regex(u8 * app_name, u8 * regex_array, int regex_num);
+int upf_dpi_lookup(u8 * str, uint16_t length, char **app_name);
 
-#endif /* __included_dpi_h__ */
+#endif /* __included_upf_dpi_h__ */
 
 /*
  * fd.io coding-style-patch-verification: ON
