@@ -18,8 +18,17 @@
 #ifndef __included_upf_dpi_h__
 #define __included_upf_dpi_h__
 
-int upf_dpi_add_multi_regex(u8 * app_name, u8 * regex_array, int regex_num);
-int upf_dpi_lookup(u8 * str, uint16_t length, char **app_name);
+typedef struct {
+  /* App indecies vector */
+  u32 *indecies;
+  /* Regex expressions vector */
+  const char **rules;
+  /* Flags vector */
+  u32 *flags;
+} upf_dpi_args_t;
+
+int upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 db_index);
+int upf_dpi_lookup(u32 db_index, const char * str, uint16_t length, u32 * app_index);
 
 #endif /* __included_upf_dpi_h__ */
 

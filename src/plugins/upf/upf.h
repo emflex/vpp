@@ -538,7 +538,7 @@ int upf_app_add_del (upf_main_t * sm, u8 * name, int add);
 int upf_rule_add_del (upf_main_t * sm, u8 * name, u32 id,
                       int add, upf_rule_args_t * args);
 
-int upf_app_run_rules(u8 * app_name);
+int upf_add_multi_regex(void);
 
 #endif /* __included_upf_h__ */
 

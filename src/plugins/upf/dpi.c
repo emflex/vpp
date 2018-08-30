@@ -18,46 +18,25 @@
 
 #define _LGPL_SOURCE            /* LGPL v3.0 is compatible with Apache 2.0 */
 
+#include <vppinfra/types.h>
+#include <vppinfra/vec.h>
+
 #include <hs.h>
 #include "upf/dpi.h"
-
-#define UPF_DPI_REGEX_NUM_MAX 100
-#define CFG_VALUE_LEN 64
 
 static hs_database_t *database = NULL;
 static hs_compile_error_t *compile_err = NULL;
 static hs_scratch_t *scratch = NULL;
 
-static const char *patterns[UPF_DPI_REGEX_NUM_MAX] = {};
-static unsigned patterns_ids[UPF_DPI_REGEX_NUM_MAX] = {};
-static unsigned flags[UPF_DPI_REGEX_NUM_MAX] = {};
-static u8* names[UPF_DPI_REGEX_NUM_MAX] = {};
-
 int
-upf_dpi_add_multi_regex(u8 * app_name, u8 * regex_array, int regex_num)
+upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 db_index)
 {
-  int i = 0;
-  u8 length = 0;
+  (void) db_index;
 
-  if (regex_num > UPF_DPI_REGEX_NUM_MAX)
-    return -1;
-
-  if (database)
-    {
-      hs_free_database(database);
-      database = NULL;
-    }
-
-  for (i = 0; i < regex_num; i++)
-    {
-      length = MIN(CFG_VALUE_LEN - 1, strlen(regex_array[i]));
-      patterns[i] = entries[i].value;
-      patterns_ids[i] = i;
-      flags[i] = HS_FLAG_DOTALL;
-    }
-
-  if (hs_compile_multi(patterns, flags, patterns_ids, regex_num,
-                       HS_MODE_BLOCK, NULL, &database, &compile_err) != HS_SUCCESS)
+  if (hs_compile_multi(args->rules, args->flags,
+                       args->indecies, vec_len(args->rules),
+                       HS_MODE_BLOCK, NULL, &database,
+                       &compile_err) != HS_SUCCESS)
     {
       return -1;
     }
@@ -81,19 +60,20 @@ upf_dpi_event_handler(unsigned int id, unsigned long long from,
   (void) to;
   (void) flags;
 
-  char **name = (char**)ctx;
+  u32 *app_id = (u32*)ctx;
 
-  *name = names[id];
+  *app_id = id;
 
   return 0;
 }
 
 int
-upf_dpi_lookup(u8 * str, uint16_t length, char **app_name)
+upf_dpi_lookup(u32 db_index, const char * str, uint16_t length, u32 * app_index)
 {
+  (void) db_index;
   int ret = 0;
 
-  ret = hs_scan(database, str, length, 0, scratch, upf_dpi_event_handler, (void*)app_name);
+  ret = hs_scan(database, str, length, 0, scratch, upf_dpi_event_handler, (void*)app_index);
     if (ret != HS_SUCCESS)
     {
       return -1;
