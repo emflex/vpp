@@ -61,7 +61,7 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t * args)
 }
 
 int
-upf_add_multi_regex(u8 ** apps, u32 * db_index)
+upf_add_multi_regex(u8 ** apps, u32 * db_index, u8 create)
 {
   uword *p = NULL;
   u8 **app_name = NULL;
@@ -81,7 +81,7 @@ upf_add_multi_regex(u8 ** apps, u32 * db_index)
         }
     }
 
-  upf_dpi_add_multi_regex(&args, db_index);
+  upf_dpi_add_multi_regex(&args, db_index, create);
 
   return 0;
 }
