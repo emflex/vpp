@@ -865,6 +865,7 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 			vec_foreach(app_id, pdr->pdi.application_id)
 				{
 					vec_add1(create->pdi.app_id, *app_id);
+					upf_add_multi_regex(create->pdi.app_id, &create->dpi_db_id);
 				}
 		}
 

@@ -29,9 +29,9 @@ static hs_compile_error_t *compile_err = NULL;
 static hs_scratch_t *scratch = NULL;
 
 int
-upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 db_index)
+upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index)
 {
-  (void) db_index;
+  *db_index = 0;
 
   if (hs_compile_multi(args->rules, args->flags,
                        args->indecies, vec_len(args->rules),

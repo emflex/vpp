@@ -61,22 +61,25 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t * args)
 }
 
 int
-upf_add_multi_regex(void)
+upf_add_multi_regex(u8 ** apps, u32 * db_index)
 {
-  u8 *name = NULL;
+  uword *p = NULL;
+  u8 **app_name = NULL;
   u32 index = 0;
   upf_dpi_args_t args;
   upf_main_t * sm = &upf_main;
-  u32 db_index = 0;
+  upf_dpi_app_t *app = NULL;
 
-  /* *INDENT-OFF* */
-  hash_foreach(name, index, sm->upf_app_by_name,
-  ({
-     upf_dpi_app_t *app = NULL;
-     app = pool_elt_at_index(sm->upf_apps, index);
-     upf_add_rules(index, app, &args);
-  }));
-  /* *INDENT-ON* */
+  vec_foreach (app_name, apps)
+    {
+      p = hash_get_mem (sm->upf_app_by_name, *app_name);
+
+      if (p)
+        {
+          app = pool_elt_at_index(sm->upf_apps, p[0]);
+          upf_add_rules(index, app, &args);
+        }
+    }
 
   upf_dpi_add_multi_regex(&args, db_index);
 

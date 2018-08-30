@@ -201,7 +201,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      far = sx_get_far_by_id(active, pdr->far_id);
 
 					u32 app_index = 0;
-					upf_dpi_lookup(pdr->id, "test", 4, &app_index);
+					upf_dpi_lookup(pdr->dpi_db_id, "test", 4, &app_index);
 		    }
 			
 		}
