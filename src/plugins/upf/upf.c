@@ -1367,7 +1367,9 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg)
       flow = pool_elt_at_index(fm->flows, e->value);
       index = e->next;
 
-      app = pool_elt_at_index (sm->upf_apps, flow->app_index);
+      if (sm->upf_apps)
+        app = pool_elt_at_index (sm->upf_apps, flow->app_index);
+
       app_name = (app != NULL) ? (const char*)app->name : none;
 
       vlib_cli_output (vm, "%llu: proto 0x%x, %U(%u) <-> %U(%u), packets %u, app %s, ttl %u",
