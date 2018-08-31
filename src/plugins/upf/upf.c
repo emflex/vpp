@@ -1350,6 +1350,10 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg)
   u32 ht_line_head_index = (u32) kvp->value;
   flowtable_main_t * fm = &flowtable_main;
   flowtable_per_session_t * fmt = &fm->per_session[0];
+  upf_dpi_app_t *app = NULL;
+  const char *app_name = NULL;
+  const char *none = "None";
+  upf_main_t * sm = &upf_main;
 
   if (dlist_is_empty(fmt->ht_lines, ht_line_head_index))
     return;
@@ -1361,10 +1365,12 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg)
     {
       dlist_elt_t * e = pool_elt_at_index(fmt->ht_lines, index);
       flow = pool_elt_at_index(fm->flows, e->value);
-
       index = e->next;
 
-      vlib_cli_output (vm, "%llu: proto 0x%x, %U(%u) <-> %U(%u), packets %u, ttl %u",
+      app = pool_elt_at_index (sm->upf_apps, flow->app_index);
+      app_name = (app != NULL) ? (const char*)app->name : none;
+
+      vlib_cli_output (vm, "%llu: proto 0x%x, %U(%u) <-> %U(%u), packets %u, app %s, ttl %u",
                        flow->infos.data.flow_id,
                        flow->sig.s.ip4.proto,
                        format_ip4_address, &flow->sig.s.ip4.src,
@@ -1372,6 +1378,7 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg)
                        format_ip4_address, &flow->sig.s.ip4.dst,
                        ntohs(flow->sig.s.ip4.port_dst),
                        flow->stats[0].pkts + flow->stats[1].pkts,
+                       app_name,
                        flow->expire);
     }
 }
