@@ -86,6 +86,57 @@ upf_add_multi_regex(u8 ** apps, u32 * db_index, u8 create)
   return 0;
 }
 
+static clib_error_t *
+upf_dpi_app_add_command_fn (vlib_main_t * vm,
+                            unformat_input_t * input,
+                            vlib_cli_command_t * cmd)
+{
+  unformat_input_t _line_input, *line_input = &_line_input;
+  u8 *name = NULL;
+  clib_error_t *error = NULL;
+  u8 **apps = NULL;
+  u32 id = 0;
+
+  /* Get a line of input. */
+  if (!unformat_user (input, unformat_line_input, line_input))
+    return error;
+
+  while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
+    {
+      if (unformat (line_input, "%s", &name))
+        {
+          break;
+        }
+      else
+        {
+          error = clib_error_return (0, "unknown input `%U'",
+          format_unformat_error, input);
+          goto done;
+        }
+    }
+
+  vec_add1(apps, name);
+  upf_add_multi_regex(apps, &id, 1);
+  vec_free(apps);
+
+  vlib_cli_output (vm, "DB id %u", id);
+
+done:
+  vec_free (name);
+  unformat_free (line_input);
+
+  return error;
+}
+
+/* *INDENT-OFF* */
+VLIB_CLI_COMMAND (upf_dpi_app_add_command, static) =
+{
+  .path = "upf dpi app add",
+  .short_help = "upf dpi app add <name>",
+  .function = upf_dpi_app_add_command_fn,
+};
+/* *INDENT-ON* */
+
 /* Action function shared between message handler and debug CLI */
 
 static int
