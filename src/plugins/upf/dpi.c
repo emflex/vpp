@@ -100,6 +100,9 @@ upf_dpi_lookup(u32 db_index, const char * str, uint16_t length, u32 * app_index)
   upf_dpi_entry_t *entry = NULL;
   int ret = 0;
 
+  if (!upf_dpi_db)
+    return -1;
+
   entry = pool_elt_at_index (upf_dpi_db, db_index);
   if (!entry)
     return -1;
