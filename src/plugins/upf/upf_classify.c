@@ -124,7 +124,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
   BVT(clib_bihash_kv) kv;
   int created = 0;
   flowtable_main_t * fm = &flowtable_main;
-  int res = 0;
   clib_error_t * error = NULL;
 
   next_index = node->cached_next_index;
@@ -207,13 +206,9 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
 		      far = sx_get_far_by_id(active, pdr->far_id);
 
-					u32 app_index = 0;
-					u8 *url = NULL;
-					res = upf_dpi_lookup(pdr->dpi_db_id, url, vec_len(url), &app_index);
-					if (res == 0)
-						flow->app_index = app_index;
+		      upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+		                               pdr->dpi_db_id, &flow->app_index);
 		    }
-			
 		}
 	    }
 	  else
@@ -247,6 +242,9 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      /* TODO: this should be optimized */
 		      pdr = active->pdr + results[0] - 1;
 		      far = sx_get_far_by_id(active, pdr->far_id);
+
+		      upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+		                               pdr->dpi_db_id, &flow->app_index);
 		    }
 		}
 	      else
