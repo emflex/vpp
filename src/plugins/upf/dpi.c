@@ -45,7 +45,10 @@ upf_dpi_get_expressions(u32 db_index, regex_t** expressions)
 {
   upf_dpi_entry_t *entry = NULL;
 
-  if (!upf_dpi_db)
+  if (!db_index)
+    return -1;
+
+  if (pool_elts(upf_dpi_db) < db_index)
     return -1;
 
   db_index -= 1;
@@ -76,10 +79,10 @@ upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index, u8 create)
 
   if (!create)
     {
-      if (!upf_dpi_db)
-        return -1;
-    
       if (!*db_index)
+        return -1;
+
+      if (pool_elts(upf_dpi_db) < *db_index)
         return -1;
 
       index = *db_index - 1;
@@ -155,10 +158,10 @@ upf_dpi_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index)
   int ret = 0;
   upf_dpi_cb_args_t args = {};
 
-  if (!upf_dpi_db)
+  if (!db_index)
     return -1;
 
-  if (!db_index)
+  if (pool_elts(upf_dpi_db) < db_index)
     return -1;
 
   db_index -= 1;
@@ -185,10 +188,10 @@ upf_dpi_remove(u32 db_index)
 {
   upf_dpi_entry_t *entry = NULL;
 
-  if (!upf_dpi_db)
+  if (!db_index)
     return -1;
 
-  if (!db_index)
+  if (pool_elts(upf_dpi_db) < db_index)
     return -1;
 
   db_index -= 1;
