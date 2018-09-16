@@ -32,7 +32,7 @@ typedef struct {
 int upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index, u8 create);
 int upf_dpi_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index);
 int upf_dpi_remove(u32 db_index);
-int upf_dpi_get_expressions(u32 db_index, regex_t** expressions);
+int upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids);
 
 #define MIN(x,y) (((x)<(y))?(x):(y))
 

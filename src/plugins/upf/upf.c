@@ -78,7 +78,8 @@ upf_add_multi_regex(u8 ** apps, u32 * db_index, u8 create)
 
       if (p)
         {
-          app = pool_elt_at_index(sm->upf_apps, p[0]);
+          index = p[0];
+          app = pool_elt_at_index(sm->upf_apps, index);
           upf_add_rules(index, app, &args);
         }
     }
@@ -254,6 +255,11 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
   int res = 0;
   regex_t *regex = NULL;
   regex_t *expressions = NULL;
+  u32 *ids = NULL;
+  int i = 0;
+  u32 app_id = 0;
+  upf_dpi_app_t *app = NULL;
+  upf_main_t * sm = &upf_main;
 
   /* Get a line of input. */
   if (!unformat_user (input, unformat_line_input, line_input))
@@ -273,12 +279,20 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
         }
     }
 
-  res = upf_dpi_get_expressions(id, &expressions);
+  res = upf_dpi_get_db_contents(id, &expressions, &ids);
   if (res == 0)
     {
-      vec_foreach (regex, expressions)
+      for (i = 0; i < vec_len(expressions); i++)
         {
-          vlib_cli_output (vm, "regex: %s", *regex);
+          regex = &expressions[i];
+          app_id = ids[i];
+
+          if ((app_id > 0) && 
+              (pool_elts(sm->upf_apps) >= app_id))
+            {
+              app = pool_elt_at_index (sm->upf_apps, app_id - 1);
+          }
+          vlib_cli_output (vm, "regex: %s, app: %s", *regex, app->name);
         }
     }
   else

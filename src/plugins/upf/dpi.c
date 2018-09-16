@@ -41,7 +41,7 @@ typedef struct {
 static upf_dpi_entry_t *upf_dpi_db = NULL;
 
 int
-upf_dpi_get_expressions(u32 db_index, regex_t** expressions)
+upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
 {
   upf_dpi_entry_t *entry = NULL;
 
@@ -58,6 +58,7 @@ upf_dpi_get_expressions(u32 db_index, regex_t** expressions)
     return -1;
 
   *expressions = entry->expressions;
+  *ids = entry->ids;
 
   return 0;
 }
