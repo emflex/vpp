@@ -119,12 +119,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
   uint32_t results[1]; /* make classify by 4 categories. */
   const u8 *data[4];
   flow_entry_t *flow = NULL;
-  uword is_reverse = 0;
-  flow_signature_t sig;
-  BVT(clib_bihash_kv) kv;
-  int created = 0;
-  flowtable_main_t * fm = &flowtable_main;
-  clib_error_t * error = NULL;
 
   next_index = node->cached_next_index;
   stats_sw_if_index = node->runtime_data[0];
@@ -158,33 +152,13 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  sidx = vnet_buffer (b)->gtpu.session_index;
 	  sess = pool_elt_at_index (gtm->sessions, sidx);
 
-		kv.key = compute_packet_hash(b, is_ip4, &is_reverse, &sig);
-
-		if (!sess->fmt.ht_lines)
-    {
-      error = flowtable_init_session(fm, &sess->fmt);
-      if (error)
-        continue;
-    }
-
-    u32 current_time =
-        (u32) ((u64) fm->vlib_main->cpu_time_last_node_dispatch /
-        fm->vlib_main->clib_time.clocks_per_second);
- 
-    timer_wheel_index_update(&sess->fmt, current_time);
-
-		flow = flowtable_entry_lookup_create(fm, &sess->fmt, &kv, &sig, current_time, &created);
-
-		if (!flow)
-		{
-			continue;
-		}
-
 	  next = UPF_CLASSIFY_NEXT_DROP;
 	  active = sx_get_rules(sess, SX_ACTIVE);
 	  direction = vnet_buffer (b)->gtpu.src_intf == INTF_ACCESS ? UL_SDF : DL_SDF;
 
 	  pl = vlib_buffer_get_current(b) + vnet_buffer (b)->gtpu.data_offset;
+
+		flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4);
 
 	  acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
 	  if (acl == NULL)
@@ -206,8 +180,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
 		      far = sx_get_far_by_id(active, pdr->far_id);
 
-		      upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-		                               pdr->dpi_db_id, &flow->app_index);
+					if (flow && !flow->app_index)
+					{
+		        upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+		                                 pdr->dpi_db_id, &flow->app_index);
+						gtp_debug("flow app id: %d\n", flow->app_index);
+					}
 		    }
 		}
 	    }
@@ -243,8 +221,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      pdr = active->pdr + results[0] - 1;
 		      far = sx_get_far_by_id(active, pdr->far_id);
 
-		      upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-		                               pdr->dpi_db_id, &flow->app_index);
+					if (flow && !flow->app_index)
+					{
+		        upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+		                                 pdr->dpi_db_id, &flow->app_index);
+						gtp_debug("flow app id: %d\n", flow->app_index);
+					}
 		    }
 		}
 	      else
