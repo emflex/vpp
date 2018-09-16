@@ -158,7 +158,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 	  pl = vlib_buffer_get_current(b) + vnet_buffer (b)->gtpu.data_offset;
 
-		flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4);
+	  flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4);
 
 	  acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
 	  if (acl == NULL)
@@ -180,12 +180,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
 		      far = sx_get_far_by_id(active, pdr->far_id);
 
-					if (flow && !flow->app_index)
-					{
-		        upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-		                                 pdr->dpi_db_id, &flow->app_index);
-						gtp_debug("flow app id: %d\n", flow->app_index);
-					}
+		      if (flow && !flow->app_index)
+		        {
+		          upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+		                                   pdr->dpi_db_id, &flow->app_index);
+		          gtp_debug("flow app id: %d\n", flow->app_index);
+		        }
 		    }
 		}
 	    }
@@ -221,12 +221,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		      pdr = active->pdr + results[0] - 1;
 		      far = sx_get_far_by_id(active, pdr->far_id);
 
-					if (flow && !flow->app_index)
-					{
-		        upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+		      if (flow && !flow->app_index)
+		        {
+		          upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
 		                                 pdr->dpi_db_id, &flow->app_index);
-						gtp_debug("flow app id: %d\n", flow->app_index);
-					}
+		          gtp_debug("flow app id: %d\n", flow->app_index);
+		        }
 		    }
 		}
 	      else
