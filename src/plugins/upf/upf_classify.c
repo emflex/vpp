@@ -33,7 +33,6 @@
 #include <upf/upf_pfcp.h>
 #include <upf/upf_http_redirect_server.h>
 
-#include <vppinfra/bihash_8_8.h>
 #include <upf/flowtable.h>
 #include <upf/flowtable_impl.h>
 

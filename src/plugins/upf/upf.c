@@ -53,7 +53,7 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args)
 
      if (rule->path)
        {
-         arg.index = app_index;
+         arg.index = app_index + 1;
          arg.rule = rule->path;
          vec_add1(*args, arg);
        }
@@ -212,11 +212,15 @@ upf_dpi_url_test_command_fn (vlib_main_t * vm,
     }
 
   res = upf_dpi_lookup(id, url, vec_len(url), &app_index);
-  if (res == 0)
+  if ((res == 0) && 
+      (app_index > 0) && 
+      (pool_elts(sm->upf_apps) >= app_index))
     {
-      app = pool_elt_at_index (sm->upf_apps, app_index);
+      app = pool_elt_at_index (sm->upf_apps, app_index - 1);
       if (app)
-        vlib_cli_output (vm, "Matched app: %s", app->name);
+        {
+          vlib_cli_output (vm, "Matched app: %s", app->name);
+        }
     }
   else
     {
@@ -1565,6 +1569,7 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp,
   const char *none = "None";
   upf_main_t * sm = &upf_main;
   vlib_main_t *vm = sm->vlib_main;
+  u32 app_index = 0;
 
   if (dlist_is_empty(fmt->ht_lines, ht_line_head_index))
     return;
@@ -1578,8 +1583,14 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp,
       flow = pool_elt_at_index(fm->flows, e->value);
       index = e->next;
 
-      if (sm->upf_apps)
-        app = pool_elt_at_index (sm->upf_apps, flow->app_index);
+      if (flow->app_index > 0)
+        {
+          if (pool_elts(sm->upf_apps) >= flow->app_index)
+            {
+              app_index = flow->app_index - 1;
+              app = pool_elt_at_index (sm->upf_apps, app_index);
+            }
+        }
 
       app_name = (app != NULL) ? (const char*)app->name : none;
 
