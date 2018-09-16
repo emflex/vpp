@@ -146,7 +146,16 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
     }
 
   vec_add1(apps, name);
-  res = upf_add_multi_regex(apps, &pdr->dpi_db_id, 1);
+
+  if (pdr->dpi_db_id > 0)
+    {
+      res = upf_add_multi_regex(apps, &pdr->dpi_db_id, 0);
+    }
+  else
+    {
+      res = upf_add_multi_regex(apps, &pdr->dpi_db_id, 1);
+    }
+
   vec_free(apps);
 
   if (res == 0)
@@ -227,6 +236,64 @@ VLIB_CLI_COMMAND (upf_dpi_url_test_command, static) =
   .path = "upf dpi test db",
   .short_help = "upf dpi test db <id> url <url>",
   .function = upf_dpi_url_test_command_fn,
+};
+/* *INDENT-ON* */
+
+static clib_error_t *
+upf_dpi_show_db_command_fn (vlib_main_t * vm,
+                            unformat_input_t * input,
+                            vlib_cli_command_t * cmd)
+{
+  unformat_input_t _line_input, *line_input = &_line_input;
+  clib_error_t *error = NULL;
+  u32 id = 0;
+  int res = 0;
+  regex_t *regex = NULL;
+  regex_t *expressions = NULL;
+
+  /* Get a line of input. */
+  if (!unformat_user (input, unformat_line_input, line_input))
+    return error;
+
+  while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
+    {
+      if (unformat (line_input, "%u", &id))
+        {
+          break;
+        }
+      else
+        {
+          error = clib_error_return (0, "unknown input `%U'",
+          format_unformat_error, input);
+          goto done;
+        }
+    }
+
+  res = upf_dpi_get_expressions(id, &expressions);
+  if (res == 0)
+    {
+      vec_foreach (regex, expressions)
+        {
+          vlib_cli_output (vm, "regex: %s", *regex);
+        }
+    }
+  else
+    {
+      vlib_cli_output (vm, "Unknown DB id");
+    }
+
+done:
+  unformat_free (line_input);
+
+  return error;
+}
+
+/* *INDENT-OFF* */
+VLIB_CLI_COMMAND (upf_dpi_show_db_command, static) =
+{
+  .path = "show upf dpi db",
+  .short_help = "show upf dpi db <id>",
+  .function = upf_dpi_show_db_command_fn,
 };
 /* *INDENT-ON* */
 
