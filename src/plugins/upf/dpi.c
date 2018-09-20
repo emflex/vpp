@@ -240,6 +240,32 @@ upf_add_multi_regex(u8 ** apps, u32 * db_index, u8 create)
   return res;
 }
 
+static void
+upf_dpi_all_pdr_update(u8* app_name)
+{
+  upf_main_t *gtm = &upf_main;
+  upf_session_t *sess = NULL;
+  struct rules *rules = NULL;
+  upf_pdr_t *pdr = NULL;
+  pfcp_application_id_t *app_id_vector = NULL;
+
+  vec_add1(app_id_vector, app_name);
+
+  /* *INDENT-OFF* */
+  pool_foreach (sess, gtm->sessions,
+  ({
+     rules = sx_get_rules(sess, SX_ACTIVE);
+
+     vec_foreach (pdr, rules->pdr)
+       {
+         upf_add_multi_regex(app_id_vector, &pdr->dpi_db_id, 0);
+       }
+  }));
+  /* *INDENT-ON* */
+
+  vec_free(app_id_vector);
+}
+
 static clib_error_t *
 upf_dpi_app_add_command_fn (vlib_main_t * vm,
                             unformat_input_t * input,
@@ -704,6 +730,8 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
       hash_unset_mem (app->rules_by_id, &rule_index);
       pool_put (app->rules, rule);
     }
+
+  upf_dpi_all_pdr_update(app_name);
 
   return 0;
 }
