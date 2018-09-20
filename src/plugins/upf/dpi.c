@@ -24,7 +24,7 @@
 #include <vppinfra/vec.h>
 #include <vppinfra/pool.h>
 
-#include <hs.h>
+#include <hs/hs.h>
 #include "upf/dpi.h"
 #include <upf/upf_pfcp.h>
 
