@@ -275,7 +275,10 @@ upf_dpi_all_pdr_update(u8* app_name)
 
      vec_foreach (pdr, rules->pdr)
        {
-         upf_dpi_get_db_id(app_name, &pdr->dpi_db_id);
+         if (memcmp(pdr->app_name, app_name, UPF_DPI_APPLICATION_NAME_LEN_MAX) == 0)
+         {
+           upf_dpi_get_db_id(app_name, &pdr->dpi_db_id);
+         }
        }
   }));
   /* *INDENT-ON* */

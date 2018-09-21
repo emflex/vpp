@@ -262,6 +262,7 @@ typedef struct {
   u8 outer_header_removal;
   u16 far_id;
   u16 *urr_ids;
+  u8 *app_name;
   u32 dpi_db_id;
 } upf_pdr_t;
 

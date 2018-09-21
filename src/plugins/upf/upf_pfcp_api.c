@@ -744,6 +744,7 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 		{
 			create->pdi.fields |= F_PDI_APPLICATION_ID;
 
+			create->app_name = vec_dup(pdr->pdi.application_id);
 			upf_dpi_get_db_id(pdr->pdi.application_id, &create->dpi_db_id);
 		}
 
@@ -863,6 +864,9 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 			{
 				update->pdi.fields |= F_PDI_APPLICATION_ID;
 
+
+				vec_free(update->app_name);
+				update->app_name = vec_dup(pdr->pdi.application_id);
 				upf_dpi_get_db_id(pdr->pdi.application_id, &update->dpi_db_id);
 			}
 
@@ -910,6 +914,7 @@ static int handle_remove_pdr(upf_session_t *sess, pfcp_remove_pdr_t *remove_pdr,
     delete = sx_get_pdr(sess, SX_PENDING, pdr->pdr_id);
     if (delete)
       {
+        vec_free(delete->app_name);
         upf_dpi_remove(delete->dpi_db_id);
       }
 
