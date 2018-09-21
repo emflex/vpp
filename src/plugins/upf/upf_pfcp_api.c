@@ -743,10 +743,7 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 		{
 			create->pdi.fields |= F_PDI_APPLICATION_ID;
 
-			pfcp_application_id_t *app_id_vector = NULL;
-			vec_add1(app_id_vector, pdr->pdi.application_id);
-			upf_add_multi_regex(app_id_vector, &create->dpi_db_id, 1);
-			vec_free(app_id_vector);
+			upf_dpi_create_update_db(pdr->pdi.application_id, &create->dpi_db_id, 1);
 		}
 
       create->outer_header_removal = OPT(pdr, CREATE_PDR_OUTER_HEADER_REMOVAL,
@@ -865,10 +862,7 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 			{
 				update->pdi.fields |= F_PDI_APPLICATION_ID;
 
-				pfcp_application_id_t *app_id_vector = NULL;
-				vec_add1(app_id_vector, pdr->pdi.application_id);
-				upf_add_multi_regex(app_id_vector, &update->dpi_db_id, 0);
-				vec_free(app_id_vector);
+				upf_dpi_create_update_db(pdr->pdi.application_id, &update->dpi_db_id, 0);
 			}
 
       update->outer_header_removal = OPT(pdr, UPDATE_PDR_OUTER_HEADER_REMOVAL,

@@ -209,33 +209,26 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args)
 }
 
 int
-upf_add_multi_regex(u8 ** apps, u32 * db_index, u8 create)
+upf_dpi_create_update_db(u8 * app_name, u32 * db_index, u8 create)
 {
   uword *p = NULL;
-  u8 **app_name = NULL;
-  u32 index = 0;
   upf_dpi_args_t *args = NULL;
   upf_main_t * sm = &upf_main;
   upf_dpi_app_t *app = NULL;
   int res = 0;
 
-  vec_foreach (app_name, apps)
-    {
-      p = hash_get_mem (sm->upf_app_by_name, *app_name);
+  p = hash_get_mem (sm->upf_app_by_name, app_name);
 
-      if (p)
-        {
-          index = p[0];
-          app = pool_elt_at_index(sm->upf_apps, index);
-          upf_add_rules(index, app, &args);
-        }
-    }
+  if (!p)
+    return -1;
+
+  app = pool_elt_at_index(sm->upf_apps, p[0]);
+  upf_add_rules(p[0], app, &args);
 
   if (!args)
     return -1;
 
   res = upf_dpi_add_multi_regex(args, db_index, create);
-  vec_free(args);
 
   return res;
 }
@@ -247,9 +240,6 @@ upf_dpi_all_pdr_update(u8* app_name)
   upf_session_t *sess = NULL;
   struct rules *rules = NULL;
   upf_pdr_t *pdr = NULL;
-  pfcp_application_id_t *app_id_vector = NULL;
-
-  vec_add1(app_id_vector, app_name);
 
   /* *INDENT-OFF* */
   pool_foreach (sess, gtm->sessions,
@@ -258,12 +248,10 @@ upf_dpi_all_pdr_update(u8* app_name)
 
      vec_foreach (pdr, rules->pdr)
        {
-         upf_add_multi_regex(app_id_vector, &pdr->dpi_db_id, 0);
+         upf_dpi_create_update_db(app_name, &pdr->dpi_db_id, 0);
        }
   }));
   /* *INDENT-ON* */
-
-  vec_free(app_id_vector);
 }
 
 static clib_error_t *
@@ -274,7 +262,6 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
   unformat_input_t _line_input, *line_input = &_line_input;
   u8 *name = NULL;
   clib_error_t *error = NULL;
-  u8 **apps = NULL;
   int res = 0;
   u64 up_seid = 0;
   upf_session_t *sess = NULL;
@@ -322,18 +309,14 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
       goto done;
     }
 
-  vec_add1(apps, name);
-
   if (add_flag == 0)
     {
-      res = upf_add_multi_regex(apps, &pdr->dpi_db_id, 0);
+      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id, 0);
     }
   else if (add_flag == 1)
     {
-      res = upf_add_multi_regex(apps, &pdr->dpi_db_id, 1);
+      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id, 1);
     }
-
-  vec_free(apps);
 
   if (res == 0)
     vlib_cli_output (vm, "DB id %u", pdr->dpi_db_id);
