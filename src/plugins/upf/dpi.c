@@ -212,6 +212,25 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args)
 }
 
 int
+upf_dpi_get_db_id(u8 * app_name, u32 * db_index)
+{
+  uword *p = NULL;
+  upf_main_t * sm = &upf_main;
+  upf_dpi_app_t *app = NULL;
+
+  p = hash_get_mem (sm->upf_app_by_name, app_name);
+
+  if (!p)
+    return -1;
+
+  app = pool_elt_at_index(sm->upf_apps, p[0]);
+
+  *db_index = app->db_index; 
+
+  return 0;
+}
+
+static int
 upf_dpi_create_update_db(u8 * app_name, u32 * db_index)
 {
   uword *p = NULL;
@@ -251,7 +270,7 @@ upf_dpi_all_pdr_update(u8* app_name)
 
      vec_foreach (pdr, rules->pdr)
        {
-         upf_dpi_create_update_db(app_name, &pdr->dpi_db_id);
+         upf_dpi_get_db_id(app_name, &pdr->dpi_db_id);
        }
   }));
   /* *INDENT-ON* */
@@ -314,11 +333,11 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
 
   if (add_flag == 0)
     {
-      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id);
+      res = upf_dpi_get_db_id(name, &pdr->dpi_db_id);
     }
   else if (add_flag == 1)
     {
-      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id);
+      res = upf_dpi_get_db_id(name, &pdr->dpi_db_id);
     }
 
   if (res == 0)
@@ -523,6 +542,7 @@ vnet_upf_app_add_del(u8 * name, u8 add)
 
       app->name = vec_dup(name);
       app->rules_by_id = hash_create_mem (0, sizeof (u32), sizeof (uword));
+      app->db_index = ~0;
 
       hash_set_mem (sm->upf_app_by_name, app->name, app - sm->upf_apps);
     }
@@ -682,6 +702,7 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
   uword *p = NULL;
   upf_dpi_app_t *app = NULL;
   upf_dpi_rule_t *rule = NULL;
+  int res = 0;
 
   p = hash_get_mem (sm->upf_app_by_name, app_name);
   if (!p)
@@ -716,6 +737,10 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
       hash_unset_mem (app->rules_by_id, &rule_index);
       pool_put (app->rules, rule);
     }
+
+  res = upf_dpi_create_update_db(app_name, &app->db_index);
+  if (res < 0)
+    return res;
 
   upf_dpi_all_pdr_update(app_name);
 

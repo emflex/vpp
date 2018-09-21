@@ -514,6 +514,8 @@ typedef struct {
   uword* rules_by_id;
   /* Rules vector */
   upf_dpi_rule_t *rules;
+  /* DPI DB id */
+  u32 db_index;
 } upf_dpi_app_t;
 
 typedef struct {
