@@ -44,6 +44,18 @@ typedef struct {
 
 static upf_dpi_entry_t *upf_dpi_db = NULL;
 
+static void
+upf_dpi_cleanup_db_entry(upf_dpi_entry_t *entry)
+{
+  hs_free_database(entry->database);
+  hs_free_scratch(entry->scratch);
+  vec_free(entry->expressions);
+  vec_free(entry->flags);
+  vec_free(entry->ids);
+
+  memset(entry, 0, sizeof(upf_dpi_entry_t));
+}
+
 int
 upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
 {
@@ -79,10 +91,7 @@ upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index)
       if (!entry)
         return -1;
 
-      hs_free_database(entry->database);
-      entry->database = NULL;
-      hs_free_scratch(entry->scratch);
-      entry->scratch = NULL;
+      upf_dpi_cleanup_db_entry(entry);
     }
   else
     {
@@ -172,13 +181,7 @@ upf_dpi_remove(u32 db_index)
   if (!entry)
     return -1;
 
-  hs_free_database(entry->database);
-  hs_free_scratch(entry->scratch);
-  vec_free(entry->expressions);
-  vec_free(entry->flags);
-  vec_free(entry->ids);
-
-  memset(entry, 0, sizeof(upf_dpi_entry_t));
+  upf_dpi_cleanup_db_entry(entry);
 
   pool_put (upf_dpi_db, entry);
 
