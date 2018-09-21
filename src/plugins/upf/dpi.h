@@ -51,6 +51,9 @@ upf_dpi_parse_ip4_packet(ip4_header_t * ip4, u32 dpi_db_id, u32 * app_index)
   u16 uri_length = 0;
   int res = 0;
 
+  if (dpi_db_id == ~0)
+    return -1;
+
   if (ip4->protocol != IP_PROTOCOL_TCP)
     return -1;
 
