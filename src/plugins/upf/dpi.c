@@ -431,6 +431,7 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
 {
   unformat_input_t _line_input, *line_input = &_line_input;
   clib_error_t *error = NULL;
+  u8 *name = NULL;
   u32 id = 0;
   int res = 0;
   regex_t *regex = NULL;
@@ -447,7 +448,7 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
 
   while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
     {
-      if (unformat (line_input, "%u", &id))
+    if (unformat (line_input, "%s", &name))
         {
           break;
         }
@@ -457,6 +458,13 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
           format_unformat_error, input);
           goto done;
         }
+    }
+
+  res = upf_dpi_get_db_id(name, &id);
+  if (res < 0 || id == ~0)
+    {
+      error = clib_error_return (0, "DB does not exist...");
+      goto done;
     }
 
   res = upf_dpi_get_db_contents(id, &expressions, &ids);
@@ -477,10 +485,11 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
     }
   else
     {
-      vlib_cli_output (vm, "Unknown DB id");
+      error = clib_error_return (0, "DB does not exist...");
     }
 
 done:
+  vec_free (name);
   unformat_free (line_input);
 
   return error;
@@ -489,8 +498,8 @@ done:
 /* *INDENT-OFF* */
 VLIB_CLI_COMMAND (upf_dpi_show_db_command, static) =
 {
-  .path = "show upf dpi db",
-  .short_help = "show upf dpi db <id>",
+  .path = "show upf dpi app",
+  .short_help = "show upf dpi app <name>",
   .function = upf_dpi_show_db_command_fn,
 };
 /* *INDENT-ON* */
