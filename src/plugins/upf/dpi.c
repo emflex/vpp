@@ -29,6 +29,13 @@
 #include "upf/dpi.h"
 #include <upf/upf_pfcp.h>
 
+#if CLIB_DEBUG > 0
+#define dpi_debug clib_warning
+#else
+#define dpi_debug(...)				\
+  do { } while (0)
+#endif
+
 typedef struct {
   regex_t *expressions;
   u32 *ids;
@@ -277,6 +284,8 @@ upf_dpi_all_pdr_update(u8* app_name)
        {
          if (pdr->app_name == NULL)
            continue;
+
+         dpi_debug("%s <> %s", pdr->app_name, app_name);
 
          if (strncmp((const char*)pdr->app_name,
                      (const char*)app_name,
