@@ -275,7 +275,12 @@ upf_dpi_all_pdr_update(u8* app_name)
 
      vec_foreach (pdr, rules->pdr)
        {
-         if (memcmp(pdr->app_name, app_name, UPF_DPI_APPLICATION_NAME_LEN_MAX) == 0)
+         if (pdr->app_name == NULL)
+           continue;
+
+         if (strncmp((const char*)pdr->app_name,
+                     (const char*)app_name,
+                     UPF_DPI_APPLICATION_NAME_LEN_MAX) == 0)
          {
            upf_dpi_get_db_id(app_name, &pdr->dpi_db_id);
          }
