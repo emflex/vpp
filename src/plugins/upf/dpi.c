@@ -60,7 +60,7 @@ upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
 }
 
 int
-upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index, u8 create)
+upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index)
 {
   upf_dpi_entry_t *entry = NULL;
   hs_compile_error_t *compile_err = NULL;
@@ -73,7 +73,7 @@ upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index, u8 create)
   if (vec_len(args) == 0)
     return -1;
 
-  if (!create)
+  if (*db_index != ~0)
     {
       entry = pool_elt_at_index (upf_dpi_db, *db_index);
       if (!entry)
@@ -209,7 +209,7 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args)
 }
 
 int
-upf_dpi_create_update_db(u8 * app_name, u32 * db_index, u8 create)
+upf_dpi_create_update_db(u8 * app_name, u32 * db_index)
 {
   uword *p = NULL;
   upf_dpi_args_t *args = NULL;
@@ -228,7 +228,7 @@ upf_dpi_create_update_db(u8 * app_name, u32 * db_index, u8 create)
   if (!args)
     return -1;
 
-  res = upf_dpi_add_multi_regex(args, db_index, create);
+  res = upf_dpi_add_multi_regex(args, db_index);
 
   return res;
 }
@@ -248,7 +248,7 @@ upf_dpi_all_pdr_update(u8* app_name)
 
      vec_foreach (pdr, rules->pdr)
        {
-         upf_dpi_create_update_db(app_name, &pdr->dpi_db_id, 0);
+         upf_dpi_create_update_db(app_name, &pdr->dpi_db_id);
        }
   }));
   /* *INDENT-ON* */
@@ -311,11 +311,11 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
 
   if (add_flag == 0)
     {
-      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id, 0);
+      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id);
     }
   else if (add_flag == 1)
     {
-      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id, 1);
+      res = upf_dpi_create_update_db(name, &pdr->dpi_db_id);
     }
 
   if (res == 0)
