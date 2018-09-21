@@ -252,6 +252,8 @@ upf_dpi_create_update_db(u8 * app_name, u32 * db_index)
 
   res = upf_dpi_add_multi_regex(args, db_index);
 
+  vec_free(args);
+
   return res;
 }
 
