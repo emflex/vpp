@@ -871,7 +871,7 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 				update->app_name = vec_dup(pdr->pdi.application_id);
 				upf_dpi_get_db_id(pdr->pdi.application_id, &update->dpi_db_id);
 				gtp_debug("app_id: %s, DPI DB id %u",
-									pdr->pdi.application_id, create->dpi_db_id);
+									pdr->pdi.application_id, update->dpi_db_id);
 			}
 
       update->outer_header_removal = OPT(pdr, UPDATE_PDR_OUTER_HEADER_REMOVAL,
