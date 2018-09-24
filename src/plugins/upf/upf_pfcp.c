@@ -862,7 +862,6 @@ static void sx_free_rules(upf_session_t *sx, int rule)
   {
     vec_free(pdr->urr_ids);
     vec_free(pdr->app_name);
-    upf_dpi_remove(pdr->dpi_db_id);
   }
 
   vec_free(rules->pdr);

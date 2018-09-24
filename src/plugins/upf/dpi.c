@@ -594,6 +594,7 @@ vnet_upf_app_add_del(u8 * name, u8 add)
       }));
       /* *INDENT-ON* */
 
+      upf_dpi_remove(app->db_index);
       vec_free (app->name);
       hash_free(app->rules_by_id);
       pool_free(app->rules);

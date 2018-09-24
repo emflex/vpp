@@ -919,7 +919,6 @@ static int handle_remove_pdr(upf_session_t *sess, pfcp_remove_pdr_t *remove_pdr,
     if (delete)
       {
         vec_free(delete->app_name);
-        upf_dpi_remove(delete->dpi_db_id);
       }
 
     if ((r = sx_delete_pdr(sess, pdr->pdr_id)) != 0)
