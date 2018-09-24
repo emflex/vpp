@@ -745,9 +745,9 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 			create->pdi.fields |= F_PDI_APPLICATION_ID;
 
 			create->app_name = vec_dup(pdr->pdi.application_id);
-			upf_dpi_get_db_id(pdr->pdi.application_id, &create->dpi_db_id);
+			upf_dpi_get_db_id(create->app_name, &create->dpi_db_id);
 			gtp_debug("app_id: %s, DPI DB id %u",
-								pdr->pdi.application_id, create->dpi_db_id);
+								create->app_name, create->dpi_db_id);
 		}
 
       create->outer_header_removal = OPT(pdr, CREATE_PDR_OUTER_HEADER_REMOVAL,
@@ -869,9 +869,9 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 
 				vec_free(update->app_name);
 				update->app_name = vec_dup(pdr->pdi.application_id);
-				upf_dpi_get_db_id(pdr->pdi.application_id, &update->dpi_db_id);
+				upf_dpi_get_db_id(update->app_name, &update->dpi_db_id);
 				gtp_debug("app_id: %s, DPI DB id %u",
-									pdr->pdi.application_id, update->dpi_db_id);
+									update->app_name, update->dpi_db_id);
 			}
 
       update->outer_header_removal = OPT(pdr, UPDATE_PDR_OUTER_HEADER_REMOVAL,
