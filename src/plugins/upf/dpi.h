@@ -39,7 +39,7 @@ int upf_rule_add_del (upf_main_t * sm, u8 * name, u32 id,
                       int add, upf_rule_args_t * args);
 void foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg);
 
-int upf_dpi_get_db_id(u8 * app_name, u32 * db_index);
+int upf_dpi_get_db_id(u8 * app_name, u32 * path_db_index, u32 * host_db_index);
 
 #define MIN(x,y) (((x)<(y))?(x):(y))
 
