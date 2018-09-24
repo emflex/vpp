@@ -745,6 +745,7 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 			create->pdi.fields |= F_PDI_APPLICATION_ID;
 
 			create->app_name = vec_dup(pdr->pdi.application_id);
+			vec_add1(create->app_name, 0);
 			upf_dpi_get_db_id(create->app_name, &create->dpi_db_id);
 			gtp_debug("app_id: %s, DPI DB id %u",
 								create->app_name, create->dpi_db_id);
@@ -866,9 +867,9 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 			{
 				update->pdi.fields |= F_PDI_APPLICATION_ID;
 
-
 				vec_free(update->app_name);
 				update->app_name = vec_dup(pdr->pdi.application_id);
+				vec_add1(update->app_name, 0);
 				upf_dpi_get_db_id(update->app_name, &update->dpi_db_id);
 				gtp_debug("app_id: %s, DPI DB id %u",
 									update->app_name, update->dpi_db_id);
