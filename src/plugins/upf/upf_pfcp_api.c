@@ -693,6 +693,7 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 
       create->id = pdr->pdr_id;
       create->dpi_path_db_id = ~0;
+      create->dpi_host_db_id = ~0;
       create->precedence = pdr->precedence;
 
       create->pdi.nwi = nwi - gtm->nwis;
