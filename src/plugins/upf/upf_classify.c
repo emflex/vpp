@@ -120,6 +120,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
   while (n_left_from > 0)
     {
       upf_pdr_t * pdr = NULL;
+      upf_pdr_t * dpi_pdr = NULL;
       upf_far_t * far = NULL;
       u32 n_left_to_next;
       vlib_buffer_t * b;
@@ -155,24 +156,33 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
           acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
 
+          dpi_pdr = upf_get_highest_dpi_pdr(active);
+
           if (acl == NULL)
             {
               gtpu_intf_tunnel_key_t key;
               uword *p;
 
-              key.src_intf = vnet_buffer (b)->gtpu.src_intf;
-              key.teid = vnet_buffer (b)->gtpu.teid;
-
-              p = hash_get (active->wildcard_teid, key.as_u64);
-
-              if (PREDICT_TRUE (p != NULL))
+              if (dpi_pdr == NULL)
                 {
-                  pdr = sx_get_pdr_by_id(active, p[0]);
-                  if (PREDICT_TRUE (pdr != NULL))
+                  key.src_intf = vnet_buffer (b)->gtpu.src_intf;
+                  key.teid = vnet_buffer (b)->gtpu.teid;
+    
+                  p = hash_get (active->wildcard_teid, key.as_u64);
+    
+                  if (PREDICT_TRUE (p != NULL))
                     {
-                      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
-                      far = sx_get_far_by_id(active, pdr->far_id);
+                      pdr = sx_get_pdr_by_id(active, p[0]);
+                      if (PREDICT_TRUE (pdr != NULL))
+                        {
+                          vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
+                          far = sx_get_far_by_id(active, pdr->far_id);
+                        }
                     }
+                }
+              else
+                {
+                  pdr = dpi_pdr;
                 }
             }
           else /* (acl != NULL) */
@@ -191,7 +201,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 #if CLIB_DEBUG > 0
                   ip4_header_t *ip4 = (ip4_header_t *)pl;
 #endif
-  
                   rte_acl_classify(acl, data, results, 1, 1);
                   gtp_debug("Ctx: %p, src: %U, dst %U, r: %d\n",
                             acl,
@@ -206,49 +215,52 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
                       /* TODO: this should be optimized */
                       pdr = active->pdr + results[0] - 1;
                       far = sx_get_far_by_id(active, pdr->far_id);
-                }
-              else /* !is_ip4 */
-                {
-#if CLIB_DEBUG > 0
-                  ip6_header_t *ip6 = (ip6_header_t *)pl;
-#endif
-  
-                  rte_acl_classify(acl, data, results, 1, 1);
-                  gtp_debug("Ctx: %p, src: %U, dst %U, r: %d\n",
-                            acl,
-                            format_ip6_address, &ip6->src_address,
-                            format_ip6_address, &ip6->dst_address,
-                            results[0]);
-
-                  if (PREDICT_TRUE (results[0] != 0))
+                    }
+                  else /* !is_ip4 */
                     {
-                      vnet_buffer (b)->gtpu.session_index = sidx;
-                      vnet_buffer (b)->gtpu.pdr_idx = results[0] - 1;
+#if CLIB_DEBUG > 0
+                      ip6_header_t *ip6 = (ip6_header_t *)pl;
+#endif
 
-                      /* TODO: this should be optimized */
-                      pdr = active->pdr + results[0] - 1;
-                      far = sx_get_far_by_id(active, pdr->far_id);
+                      rte_acl_classify(acl, data, results, 1, 1);
+                      gtp_debug("Ctx: %p, src: %U, dst %U, r: %d\n",
+                                acl,
+                                format_ip6_address, &ip6->src_address,
+                                format_ip6_address, &ip6->dst_address,
+                                results[0]);
+    
+                      if (PREDICT_TRUE (results[0] != 0))
+                        {
+                          vnet_buffer (b)->gtpu.session_index = sidx;
+                          vnet_buffer (b)->gtpu.pdr_idx = results[0] - 1;
+
+                          /* TODO: this should be optimized */
+                          pdr = active->pdr + results[0] - 1;
+                          far = sx_get_far_by_id(active, pdr->far_id);
+                        }
+                      }
+
+                      *teid = save;
+
+                      if (pdr != NULL)
+                        {
+                          if (dpi_pdr != NULL)
+                            {
+                              pdr = (pdr->precedence > dpi_pdr->precedence) ? pdr : dpi_pdr;
+                            }
+                        }
+                      else
+                        {
+                          pdr = dpi_pdr;
+                        }
                     }
                 }
 
-              *teid = save;
-            }
-
             if (PREDICT_TRUE (pdr != 0))
               {
-                if (flow && (flow->app_index == ~0))
-                  {
-                    if (is_ip4)
-                      {
-                        upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-                                                 pdr->dpi_path_db_id,
-                                                 pdr->dpi_host_db_id,
-                                                 &flow->app_index);
-                        gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
-                                  pdr->id, flow->app_index, pdr->dpi_path_db_id);
-                      }
-                  }
-                }
+                upf_update_flow_app_index(flow, pdr, pl, is_ip4);
+                gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
+                          pdr->id, flow->app_index, pdr->dpi_path_db_id);
 
 	      /* Outer Header Removal */
 	      switch (pdr->outer_header_removal)
