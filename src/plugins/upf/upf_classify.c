@@ -172,16 +172,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
                     {
                       vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
                       far = sx_get_far_by_id(active, pdr->far_id);
-
-                      if (flow && (flow->app_index == ~0))
-                        {
-                          upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-                                                   pdr->dpi_path_db_id,
-                                                   pdr->dpi_host_db_id,
-                                                   &flow->app_index);
-                          gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
-                          pdr->id, flow->app_index, pdr->dpi_path_db_id);
-                        }
                     }
                 }
             }
@@ -216,17 +206,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
                       /* TODO: this should be optimized */
                       pdr = active->pdr + results[0] - 1;
                       far = sx_get_far_by_id(active, pdr->far_id);
-
-                      if (flow && (flow->app_index == ~0))
-                        {
-                          upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-                                                   pdr->dpi_path_db_id,
-                                                   pdr->dpi_host_db_id,
-                                                   &flow->app_index);
-                          gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
-                                    pdr->id, flow->app_index, pdr->dpi_path_db_id);
-                        }
-                    }
                 }
               else /* !is_ip4 */
                 {
@@ -256,7 +235,21 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
             }
 
             if (PREDICT_TRUE (pdr != 0))
-	    {
+              {
+                if (flow && (flow->app_index == ~0))
+                  {
+                    if (is_ip4)
+                      {
+                        upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
+                                                 pdr->dpi_path_db_id,
+                                                 pdr->dpi_host_db_id,
+                                                 &flow->app_index);
+                        gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
+                                  pdr->id, flow->app_index, pdr->dpi_path_db_id);
+                      }
+                  }
+                }
+
 	      /* Outer Header Removal */
 	      switch (pdr->outer_header_removal)
 		{
