@@ -155,20 +155,19 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4, direction, current_time);
 
 	  acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
-          dpi_pdr = upf_get_highest_dpi_pdr(active);
+	  dpi_pdr = upf_get_highest_dpi_pdr(active);
 
 	  if (acl == NULL)
 	    {
 	      gtpu_intf_tunnel_key_t key;
 	      uword *p;
 
-              if (dpi_pdr == NULL)
-                {
+	      if (dpi_pdr == NULL)
+	        {
 	      key.src_intf = vnet_buffer (b)->gtpu.src_intf;
 	      key.teid = vnet_buffer (b)->gtpu.teid;
-    
+
 	      p = hash_get (active->wildcard_teid, key.as_u64);
-    
 
 	      if (PREDICT_TRUE (p != NULL))
 		{
@@ -242,25 +241,25 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 	      *teid = save;
 
-                      if (pdr != NULL)
-                        {
-                          if (dpi_pdr != NULL)
-                            {
-                              pdr = (pdr->precedence > dpi_pdr->precedence) ? pdr : dpi_pdr;
-                            }
-                        }
-                      else
-                        {
-                          pdr = dpi_pdr;
-                        }
-                    }
-                }
+		      if (pdr != NULL)
+		        {
+		          if (dpi_pdr != NULL)
+		            {
+		              pdr = (pdr->precedence > dpi_pdr->precedence) ? pdr : dpi_pdr;
+		            }
+		        }
+		      else
+		        {
+		          pdr = dpi_pdr;
+		        }
+		    }
+		}
 
 	  if (PREDICT_TRUE (pdr != 0))
-              {
-                upf_update_flow_app_index(flow, pdr, pl, is_ip4);
-                gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
-                          pdr->id, flow->app_index, pdr->dpi_path_db_id);
+		{
+		  upf_update_flow_app_index(flow, pdr, pl, is_ip4);
+		  gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
+		          pdr->id, flow->app_index, pdr->dpi_path_db_id);
 
 	      /* Outer Header Removal */
 	      switch (pdr->outer_header_removal)
