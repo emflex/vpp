@@ -126,6 +126,9 @@ typedef struct flow_entry {
 
     /* L7 app index */
     u32 app_index;
+
+    /* TCP client direction */
+    u8 client_direction;
 } flow_entry_t;
 
 /* Timers (in seconds) */

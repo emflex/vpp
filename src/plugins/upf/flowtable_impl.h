@@ -588,6 +588,11 @@ flowtable_get_flow(u8 * packet, flowtable_per_session_t * fmt,
       return -1;
     }
 
+  if (created == 1)
+    {
+      (*flow)->client_direction = direction;
+    }
+
   /* timer management */
   if (flow_update_lifetime(*flow, packet, is_ip4))
     {

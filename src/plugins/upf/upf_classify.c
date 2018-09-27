@@ -256,7 +256,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		{
 		  far = sx_get_far_by_id(active, pdr->far_id);
 
-		  upf_update_flow_app_index(flow, pdr, pl, is_ip4);
+		  upf_update_flow_app_index(flow, pdr, pl, is_ip4, direction);
 
 	      /* Outer Header Removal */
 	      switch (pdr->outer_header_removal)
