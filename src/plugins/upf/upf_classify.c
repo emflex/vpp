@@ -155,7 +155,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4, direction, current_time);
 
 	  acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
-	  dpi_pdr = upf_get_highest_dpi_pdr(active);
+	  dpi_pdr = upf_get_highest_dpi_pdr(active, direction);
 
 	  if (acl == NULL)
 	    {
@@ -175,7 +175,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		  if (PREDICT_TRUE (pdr != NULL))
 		    {
 		      vnet_buffer (b)->gtpu.pdr_idx = pdr - active->pdr;
-		      far = sx_get_far_by_id(active, pdr->far_id);
 		        }
 		    }
 		}
@@ -214,7 +213,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 		      /* TODO: this should be optimized */
 		      pdr = active->pdr + results[0] - 1;
-		      far = sx_get_far_by_id(active, pdr->far_id);
 		}
 	      else
 		{
@@ -235,7 +233,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 		      /* TODO: this should be optimized */
 		      pdr = active->pdr + results[0] - 1;
-		      far = sx_get_far_by_id(active, pdr->far_id);
 		    }
 		}
 
@@ -257,9 +254,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 	  if (PREDICT_TRUE (pdr != 0))
 		{
+		  far = sx_get_far_by_id(active, pdr->far_id);
+
 		  upf_update_flow_app_index(flow, pdr, pl, is_ip4);
-		  gtp_debug("PDR %u, flow app id: %u, path DPI DB id %u\n",
-		          pdr->id, flow->app_index, pdr->dpi_path_db_id);
+		  gtp_debug("PDR %u, FAR %u, flow app: %v, path DPI DB id %u\n",
+		            pdr->id, pdr->far_id, flow->app_index,
+		            pdr->dpi_path_db_id);
 
 	      /* Outer Header Removal */
 	      switch (pdr->outer_header_removal)

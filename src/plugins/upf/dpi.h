@@ -127,10 +127,11 @@ upf_dpi_parse_ip4_packet(ip4_header_t * ip4, u32 path_db_id,
 }
 
 always_inline upf_pdr_t *
-upf_get_highest_dpi_pdr (struct rules * active)
+upf_get_highest_dpi_pdr (struct rules * active, int direction)
 {
   upf_pdr_t *pdr = NULL;
   upf_pdr_t *pdr_iter = NULL;
+  int iter_direction = 0;
 
   if (vec_len(active->pdr) == 0)
     return NULL;
@@ -138,6 +139,10 @@ upf_get_highest_dpi_pdr (struct rules * active)
   vec_foreach (pdr_iter, active->pdr)
     {
       if (!pdr_iter->app_name)
+        continue;
+
+      iter_direction = (pdr_iter->pdi.src_intf == SRC_INTF_ACCESS) ? UL_SDF : DL_SDF;
+      if (iter_direction != direction)
         continue;
 
       if (pdr == NULL)
