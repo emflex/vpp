@@ -184,6 +184,35 @@ upf_update_flow_app_index (flow_entry_t * flow, upf_pdr_t * pdr,
     }
 }
 
+always_inline upf_pdr_t *
+upf_get_dpi_pdr_by_name (struct rules * active, int direction, u32 app_index)
+{
+  upf_pdr_t *pdr = NULL;
+  upf_pdr_t *pdr_iter = NULL;
+  int iter_direction = 0;
+
+  if (vec_len(active->pdr) == 0)
+    return NULL;
+
+  vec_foreach (pdr_iter, active->pdr)
+    {
+      if (!pdr_iter->app_name)
+        continue;
+
+      iter_direction = (pdr_iter->pdi.src_intf == SRC_INTF_ACCESS) ? UL_SDF : DL_SDF;
+      if (iter_direction != direction)
+        continue;
+
+      if (pdr->app_index == app_index)
+        {
+          pdr = pdr_iter;
+          break;
+        }
+    }
+
+  return pdr;
+}
+
 #endif /* __included_upf_dpi_h__ */
 
 /*

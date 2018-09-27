@@ -132,6 +132,9 @@ typedef struct flow_entry {
 
     /* Client PDR */
     u32 client_pdr_id;
+
+    /* Server PDR */
+    u32 server_pdr_id;
 } flow_entry_t;
 
 /* Timers (in seconds) */

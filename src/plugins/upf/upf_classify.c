@@ -161,6 +161,18 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	    {
 	      pdr = sx_get_pdr_by_id(active, flow->client_pdr_id);
 	    }
+	  else if (flow && (flow->client_direction != direction) && flow->app_index != ~0)
+	    {
+	      if (flow->server_pdr_id != ~0)
+		{
+		  pdr = sx_get_pdr_by_id(active, flow->server_pdr_id);
+		}
+	      else
+		{
+		  pdr = upf_get_dpi_pdr_by_name(active, !direction, flow->app_index);
+		  flow->server_pdr_id = pdr->id;
+		}
+	    }
 	  else
 	    {
 	  if (acl == NULL)
