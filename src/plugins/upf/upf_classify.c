@@ -157,6 +157,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
 	  dpi_pdr = upf_get_highest_dpi_pdr(active, direction);
 
+	  if (flow && (flow->client_direction == direction) && flow->app_index != ~0)
+	    {
+	      pdr = sx_get_pdr_by_id(active, flow->client_pdr_id);
+	    }
+	  else
+	    {
 	  if (acl == NULL)
 	    {
 	      gtpu_intf_tunnel_key_t key;
@@ -250,6 +256,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		          pdr = dpi_pdr;
 		        }
 		    }
+		}
 		}
 
 	  if (PREDICT_TRUE (pdr != 0))

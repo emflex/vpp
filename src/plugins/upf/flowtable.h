@@ -129,6 +129,9 @@ typedef struct flow_entry {
 
     /* TCP client direction */
     u8 client_direction;
+
+    /* Client PDR */
+    u32 client_pdr_id;
 } flow_entry_t;
 
 /* Timers (in seconds) */
