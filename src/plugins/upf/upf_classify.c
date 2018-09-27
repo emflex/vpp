@@ -257,9 +257,6 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		  far = sx_get_far_by_id(active, pdr->far_id);
 
 		  upf_update_flow_app_index(flow, pdr, pl, is_ip4);
-		  gtp_debug("PDR %u, FAR %u, flow app: %v, path DPI DB id %u\n",
-		            pdr->id, pdr->far_id, flow->app_index,
-		            pdr->dpi_path_db_id);
 
 	      /* Outer Header Removal */
 	      switch (pdr->outer_header_removal)
