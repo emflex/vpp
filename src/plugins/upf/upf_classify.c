@@ -290,7 +290,8 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		{
 		  far = sx_get_far_by_id(active, pdr->far_id);
 
-		  if (flow->client_direction == direction)
+		  if ((flow->client_direction == direction) &&
+		      (flow->client_pdr_id == ~0))
 		    {
 		      upf_update_flow_app_index(flow, pdr, pl, is_ip4);
 		      if (flow->app_index != ~0)
