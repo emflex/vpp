@@ -179,7 +179,6 @@ upf_update_flow_app_index (flow_entry_t * flow, upf_pdr_t * pdr,
                                    pdr->dpi_path_db_id,
                                    pdr->dpi_host_db_id,
                                    &flow->app_index);
-          flow->client_pdr_id = pdr->id;
         }
     }
 }
