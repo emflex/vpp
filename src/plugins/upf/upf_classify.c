@@ -289,6 +289,8 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		  if (flow->app_index != ~0)
 		    {
 		      flow->client_pdr_id = pdr->id;
+		      gtp_debug("client PDR: %u, app_index: %u",
+				flow->client_pdr_id, flow->app_index);
 		    }
 
 	      /* Outer Header Removal */
