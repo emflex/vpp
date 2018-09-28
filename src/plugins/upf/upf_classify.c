@@ -154,6 +154,9 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 	  flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4, direction, current_time);
 	
+	  gtp_debug("client direction: %u, packet direction: %u",
+		    flow->client_direction, direction);
+
 	  /* Check if client PDR is cached in this flow */
 	  if (flow->client_direction == direction)
 	    {
@@ -177,6 +180,8 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	      {
 		pdr = upf_get_dpi_pdr_by_name(active, direction, flow->app_index);
 		flow->server_pdr_id = pdr->id;
+		gtp_debug("server PDR: %u, app_index: %u",
+			  flow->server_pdr_id, flow->app_index);
 	      }
 	    }
 
@@ -285,12 +290,15 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		{
 		  far = sx_get_far_by_id(active, pdr->far_id);
 
-		  upf_update_flow_app_index(flow, pdr, pl, is_ip4, direction);
-		  if (flow->app_index != ~0)
+		  if (flow->client_direction == direction)
 		    {
-		      flow->client_pdr_id = pdr->id;
-		      gtp_debug("client PDR: %u, app_index: %u",
-				flow->client_pdr_id, flow->app_index);
+		      upf_update_flow_app_index(flow, pdr, pl, is_ip4);
+		      if (flow->app_index != ~0)
+			{
+			  flow->client_pdr_id = pdr->id;
+			  gtp_debug("client PDR: %u, app_index: %u",
+				    flow->client_pdr_id, flow->app_index);
+			}
 		    }
 
 	      /* Outer Header Removal */
