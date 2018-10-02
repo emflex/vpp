@@ -207,6 +207,10 @@ typedef struct {
 
     /* API dynamically registered base ID. */
     u16 msg_id_base;
+
+    /* Timers  */
+    u16 timer_default_lifetime;
+    u16 timer_max_lifetime;
 } flowtable_main_t;
 
 #endif  /* __flowtable_h__ */
