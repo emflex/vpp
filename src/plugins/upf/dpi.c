@@ -1130,6 +1130,12 @@ vnet_upf_flow_timeout_update(u16 timeout)
   return flowtable_default_timelife_update(timeout);
 }
 
+static u16
+vnet_upf_get_flow_timeout(void)
+{
+  return flowtable_default_timelife_get();
+}
+
 static clib_error_t *
 upf_flow_timeout_command_fn (vlib_main_t * vm,
                              unformat_input_t * input,
@@ -1168,6 +1174,48 @@ VLIB_CLI_COMMAND (upf_flow_timeout_command, static) =
   .path = "upf flow timeout",
   .short_help = "upf flow timeout default <seconds>",
   .function = upf_flow_timeout_command_fn,
+};
+/* *INDENT-ON* */
+
+static clib_error_t *
+upf_show_flow_timeout_command_fn (vlib_main_t * vm,
+                                  unformat_input_t * input,
+                                  vlib_cli_command_t * cmd)
+{
+  unformat_input_t _line_input, *line_input = &_line_input;
+  u16 timeout = 0;
+  clib_error_t *error = NULL;
+
+  /* Get a line of input. */
+  if (!unformat_user (input, unformat_line_input, line_input))
+    return error;
+
+  while (unformat_check_input (line_input) != UNFORMAT_END_OF_INPUT)
+    {
+      if (unformat (line_input, "default"))
+        break;
+      else
+        {
+          error = unformat_parse_error (line_input);
+          goto done;
+        }
+    }
+
+  timeout = vnet_upf_get_flow_timeout();
+  vlib_cli_output (vm, "%u", timeout);
+
+done:
+  unformat_free (line_input);
+
+  return error;
+}
+
+/* *INDENT-OFF* */
+VLIB_CLI_COMMAND (upf_show_flow_timeout_command, static) =
+{
+  .path = "show upf flow timeout",
+  .short_help = "upf flow timeout default",
+  .function = upf_show_flow_timeout_command_fn,
 };
 /* *INDENT-ON* */
 

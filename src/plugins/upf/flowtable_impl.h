@@ -616,4 +616,7 @@ flowtable_default_timelife_update(u16 value);
 clib_error_t *
 flowtable_max_timelife_update(u16 value);
 
+u16
+flowtable_default_timelife_get(void);
+
 #endif  /* __flowtable_impl_h__ */

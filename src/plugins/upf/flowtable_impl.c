@@ -117,6 +117,14 @@ flowtable_default_timelife_update(u16 value)
   return error;
 }
 
+u16
+flowtable_default_timelife_get(void)
+{
+  flowtable_main_t * fm = &flowtable_main;
+
+  return fm->timer_default_lifetime;
+}
+
 clib_error_t *
 flowtable_max_timelife_update(u16 value)
 {
