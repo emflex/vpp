@@ -824,8 +824,8 @@ upf_application_rule_add_del_command_fn (vlib_main_t * vm,
 {
   unformat_input_t _line_input, *line_input = &_line_input;
   u8 *app_name = NULL;
-  u8 *src_ip = NULL;
-  u8 *dst_ip = NULL;
+  ip46_address_t src_ip;
+  ip46_address_t dst_ip;
   u8 *host = NULL;
   u8 *path = NULL;
   u32 rule_index = 0;
@@ -852,9 +852,9 @@ upf_application_rule_add_del_command_fn (vlib_main_t * vm,
             {
               add = 1;
 
-              if (unformat (line_input, "ip dst %s", &dst_ip))
+              if (unformat (line_input, "ip dst %U", unformat_ip46_address, &dst_ip, IP46_TYPE_ANY))
                 break;
-              else if (unformat (line_input, "ip src %s", &src_ip))
+              else if (unformat (line_input, "ip src %U", unformat_ip46_address, &src_ip, IP46_TYPE_ANY))
                 break;
               else if (unformat (line_input, "l7 http host %_%v%_", &host))
                 {
@@ -908,8 +908,6 @@ upf_application_rule_add_del_command_fn (vlib_main_t * vm,
     }
 
 done:
-  vec_free (dst_ip);
-  vec_free (src_ip);
   vec_free (host);
   vec_free (path);
   vec_free (app_name);
