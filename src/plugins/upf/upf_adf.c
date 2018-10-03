@@ -51,7 +51,7 @@ upf_adf_cleanup_db_entry(upf_adf_entry_t *entry)
 
   vec_foreach (regex, entry->expressions)
     {
-      vec_free(regex);
+      vec_free(*regex);
     }
 
   hs_free_database(entry->database);
