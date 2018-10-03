@@ -1,5 +1,5 @@
 /*
- * dpi.h - 3GPP TS 29.244 UPF DPI header file
+ * upf_adf.h - 3GPP TS 29.244 UPF DPI header file
  *
  * Copyright (c) 2017 Travelping GmbH
  *

@@ -1,5 +1,5 @@
 /*
- * dpi.c - 3GPP TS 29.244 UPF DPI
+ * upf_adf.c - 3GPP TS 29.244 UPF DPI
  *
  * Copyright (c) 2017 Travelping GmbH
  *
@@ -26,7 +26,7 @@
 #include <vppinfra/pool.h>
 
 #include <hs/hs.h>
-#include "upf/dpi.h"
+#include "upf/upf_adf.h"
 #include <upf/upf_pfcp.h>
 
 #if CLIB_DEBUG > 0

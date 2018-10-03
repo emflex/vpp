@@ -36,7 +36,7 @@
 #include <upf/flowtable.h>
 #include <upf/flowtable_impl.h>
 
-#include <upf/dpi.h>
+#include <upf/upf_adf.h>
 
 #if CLIB_DEBUG > 0
 #define gtp_debug clib_warning
