@@ -134,6 +134,7 @@ upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index)
                        HS_MODE_BLOCK, NULL, &entry->database,
                        &compile_err) != HS_SUCCESS)
     {
+      adf_debug("Error: %s", compile_err->message);
       error = -1;
       goto done;
     }
