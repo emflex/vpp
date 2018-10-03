@@ -203,7 +203,7 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args, u8 path
 {
   u32 index = 0;
   u32 rule_index = 0;
-  upf_dpi_rule_t *rule = NULL;
+  upf_adr_t *rule = NULL;
   upf_dpi_args_t arg;
 
   /* *INDENT-OFF* */
@@ -634,7 +634,7 @@ vnet_upf_app_add_del(u8 * name, u8 add)
       /* *INDENT-OFF* */
       hash_foreach(rule_index, index, app->rules_by_id,
       ({
-         upf_dpi_rule_t *rule = NULL;
+         upf_adr_t *rule = NULL;
          rule = pool_elt_at_index(app->rules, index);
          vnet_upf_rule_add_del(app->name, rule->id, 0, NULL);
       }));
@@ -780,7 +780,7 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
   upf_main_t *sm = &upf_main;
   uword *p = NULL;
   upf_dpi_app_t *app = NULL;
-  upf_dpi_rule_t *rule = NULL;
+  upf_adr_t *rule = NULL;
   int res = 0;
 
   p = hash_get_mem (sm->upf_app_by_name, app_name);
@@ -940,7 +940,7 @@ upf_show_rules(vlib_main_t * vm, upf_dpi_app_t * app)
 {
   u32 index = 0;
   u32 rule_index = 0;
-  upf_dpi_rule_t *rule = NULL;
+  upf_adr_t *rule = NULL;
 
   /* *INDENT-OFF* */
   hash_foreach(rule_index, index, app->rules_by_id,

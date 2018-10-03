@@ -508,7 +508,7 @@ typedef struct {
   u32 id;
   regex_t host;
   regex_t path;
-} upf_dpi_rule_t;
+} upf_adr_t;
 
 typedef struct {
   u32 id;
@@ -516,7 +516,7 @@ typedef struct {
   /* Rules hash */
   uword* rules_by_id;
   /* Rules vector */
-  upf_dpi_rule_t *rules;
+  upf_adr_t *rules;
   /* DPI DB id */
   u32 path_db_index;
   u32 host_db_index;
