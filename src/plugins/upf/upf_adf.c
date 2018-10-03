@@ -113,12 +113,18 @@ upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index)
      rule = pool_elt_at_index(app->rules, index);
 
      vec_add1(entry->ids, app->id);
+
+     vec_add(regex, ".*\\Q", sizeof(".*\\Q"));
      vec_add(regex, rule->host, vec_len(rule->host));
+     vec_add(regex, "\\E.*\\Q", sizeof("\\E.*\\Q"));
      vec_add(regex, rule->path, vec_len(rule->path));
-     vec_add1(entry->expressions, regex);
-     vec_add1(entry->flags, HS_FLAG_DOTALL);
+     vec_add(regex, "\\E.*", sizeof("\\E.*"));
 
      adf_debug("app id: %u, regex: %v", app->id, regex);
+
+     vec_add1(entry->expressions, regex);
+
+     vec_add1(entry->flags, HS_FLAG_DOTALL);
   }));
   /* *INDENT-ON* */
 
