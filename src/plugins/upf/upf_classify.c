@@ -179,9 +179,12 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	      if ((flow->client_direction != direction) && flow->app_index != ~0)
 	      {
 		pdr = upf_get_dpi_pdr_by_name(active, direction, flow->app_index);
-		flow->server_pdr_id = pdr->id;
-		gtp_debug("server PDR: %u, app_index: %u",
-			  flow->server_pdr_id, flow->app_index);
+		if (pdr)
+		  {
+		    flow->server_pdr_id = pdr->id;
+		    gtp_debug("server PDR: %u, app_index: %u",
+			      flow->server_pdr_id, flow->app_index);
+		  }
 	      }
 	    }
 

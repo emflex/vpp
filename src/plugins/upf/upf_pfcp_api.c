@@ -748,19 +748,16 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 			upf_dpi_app_t *app = NULL;
 			create->pdi.fields |= F_PDI_APPLICATION_ID;
 
-			create->app_name = vec_dup(pdr->pdi.application_id);
-
-			p = hash_get_mem (gtm->upf_app_by_name, create->app_name);
+			p = hash_get_mem (gtm->upf_app_by_name, pdr->pdi.application_id);
 			if (p)
 			  {
 			    app = pool_elt_at_index (gtm->upf_apps, p[0]);
 			    create->app_index = app->id;
+			    upf_dpi_get_db_id(app->id, &create->dpi_path_db_id,
+					      &create->dpi_host_db_id);
+			    gtp_debug("app_id: %s, DPI DB id %u",
+				      app->name, create->dpi_path_db_id);
 			  }
-
-			upf_dpi_get_db_id(create->app_name, &create->dpi_path_db_id,
-					  &create->dpi_host_db_id);
-			gtp_debug("app_id: %s, DPI DB id %u",
-				  reate->app_name, create->dpi_path_db_id);
 		}
 
       create->outer_header_removal = OPT(pdr, CREATE_PDR_OUTER_HEADER_REMOVAL,
@@ -881,20 +878,16 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 				upf_dpi_app_t *app = NULL;
 				update->pdi.fields |= F_PDI_APPLICATION_ID;
 
-				vec_free(update->app_name);
-				update->app_name = vec_dup(pdr->pdi.application_id);
-
-				p = hash_get_mem (gtm->upf_app_by_name, update->app_name);
+				p = hash_get_mem (gtm->upf_app_by_name, pdr->pdi.application_id);
 				if (p)
 				  {
 				    app = pool_elt_at_index (gtm->upf_apps, p[0]);
 				    update->app_index = app->id;
+				    upf_dpi_get_db_id(app->id, &update->dpi_path_db_id,
+						      &update->dpi_host_db_id);
+				    gtp_debug("app_id: %s, DPI DB id %u",
+					      app->name, update->dpi_path_db_id);
 				  }
-				
-				upf_dpi_get_db_id(update->app_name, &update->dpi_path_db_id,
-													&update->dpi_host_db_id);
-				gtp_debug("app_id: %s, DPI DB id %u",
-									update->app_name, update->dpi_path_db_id);
 			}
 
       update->outer_header_removal = OPT(pdr, UPDATE_PDR_OUTER_HEADER_REMOVAL,
@@ -936,14 +929,6 @@ static int handle_remove_pdr(upf_session_t *sess, pfcp_remove_pdr_t *remove_pdr,
 
   vec_foreach(pdr, remove_pdr)
   {
-    upf_pdr_t *delete;
-
-    delete = sx_get_pdr(sess, SX_PENDING, pdr->pdr_id);
-    if (delete)
-      {
-        vec_free(delete->app_name);
-      }
-
     if ((r = sx_delete_pdr(sess, pdr->pdr_id)) != 0)
       {
         fformat(stderr, "Failed to add PDR %d\n", pdr->pdr_id);

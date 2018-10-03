@@ -39,7 +39,7 @@ int upf_rule_add_del (upf_main_t * sm, u8 * name, u32 id,
                       int add, upf_rule_args_t * args);
 void foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg);
 
-int upf_dpi_get_db_id(u8 * app_name, u32 * path_db_index, u32 * host_db_index);
+int upf_dpi_get_db_id(u32 app_index, u32 * path_db_index, u32 * host_db_index);
 
 #define MIN(x,y) (((x)<(y))?(x):(y))
 
@@ -138,7 +138,7 @@ upf_get_highest_dpi_pdr (struct rules * active, int direction)
 
   vec_foreach (pdr_iter, active->pdr)
     {
-      if (!pdr_iter->app_name)
+      if (pdr_iter->app_index == ~0)
         continue;
 
       iter_direction = (pdr_iter->pdi.src_intf == SRC_INTF_ACCESS) ? UL_SDF : DL_SDF;
@@ -170,7 +170,7 @@ upf_update_flow_app_index (flow_entry_t * flow, upf_pdr_t * pdr,
 
   if (is_ip4)
     {
-      if (pdr->app_name != NULL)
+      if (pdr->app_index != ~0)
         {
           upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
                                    pdr->dpi_path_db_id,
@@ -192,7 +192,7 @@ upf_get_dpi_pdr_by_name (struct rules * active, int direction, u32 app_index)
 
   vec_foreach (pdr, active->pdr)
     {
-      if (!pdr->app_name)
+      if (pdr->app_index == ~0)
         continue;
 
       iter_direction = (pdr->pdi.src_intf == SRC_INTF_ACCESS) ? UL_SDF : DL_SDF;
