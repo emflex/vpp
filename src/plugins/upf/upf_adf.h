@@ -21,8 +21,6 @@
 #include <stddef.h>
 #include <upf/upf.h>
 
-#define UPF_adf_APPLICATION_NAME_LEN_MAX 64
-
 typedef struct {
   /* App index */
   u32 index;
