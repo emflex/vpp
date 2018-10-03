@@ -2270,14 +2270,14 @@ format_sx_session(u8 * s, va_list * args)
 
    if (pdr->app_index != ~0)
      {
-       upf_dpi_app_t *app = NULL;
+       upf_adf_app_t *app = NULL;
        app = pool_elt_at_index (gtm->upf_apps, pdr->app_index);
-       s = format(s, "  L7 DPI app name: %v\n"
-                     "  path DPI DB Id: %u\n"
-                     "  host DPI DB Id: %u\n",
+       s = format(s, "  L7 adf app name: %v\n"
+                     "  path adf DB Id: %u\n"
+                     "  host adf DB Id: %u\n",
                      app->name,
-                     pdr->dpi_path_db_id,
-                     pdr->dpi_host_db_id);
+                     pdr->adf_path_db_id,
+                     pdr->adf_host_db_id);
      }
   }
 

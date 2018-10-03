@@ -693,8 +693,8 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 
       create->id = pdr->pdr_id;
       create->app_index = ~0;
-      create->dpi_path_db_id = ~0;
-      create->dpi_host_db_id = ~0;
+      create->adf_path_db_id = ~0;
+      create->adf_host_db_id = ~0;
       create->precedence = pdr->precedence;
 
       create->pdi.nwi = nwi - gtm->nwis;
@@ -745,7 +745,7 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 	if (ISSET_BIT(pdr->pdi.grp.fields, PDI_APPLICATION_ID))
 		{
 			uword *p = NULL;
-			upf_dpi_app_t *app = NULL;
+			upf_adf_app_t *app = NULL;
 			create->pdi.fields |= F_PDI_APPLICATION_ID;
 
 			p = hash_get_mem (gtm->upf_app_by_name, pdr->pdi.application_id);
@@ -753,10 +753,10 @@ static int handle_create_pdr(upf_session_t *sess, pfcp_create_pdr_t *create_pdr,
 			  {
 			    app = pool_elt_at_index (gtm->upf_apps, p[0]);
 			    create->app_index = app->id;
-			    upf_dpi_get_db_id(app->id, &create->dpi_path_db_id,
-					      &create->dpi_host_db_id);
-			    gtp_debug("app_id: %s, DPI DB id %u",
-				      app->name, create->dpi_path_db_id);
+			    upf_adf_get_db_id(app->id, &create->adf_path_db_id,
+					      &create->adf_host_db_id);
+			    gtp_debug("app_id: %s, adf DB id %u",
+				      app->name, create->adf_path_db_id);
 			  }
 		}
 
@@ -875,7 +875,7 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 		if (ISSET_BIT(pdr->pdi.grp.fields, PDI_APPLICATION_ID))
 			{
 				uword *p = NULL;
-				upf_dpi_app_t *app = NULL;
+				upf_adf_app_t *app = NULL;
 				update->pdi.fields |= F_PDI_APPLICATION_ID;
 
 				p = hash_get_mem (gtm->upf_app_by_name, pdr->pdi.application_id);
@@ -883,10 +883,10 @@ static int handle_update_pdr(upf_session_t *sess, pfcp_update_pdr_t *update_pdr,
 				  {
 				    app = pool_elt_at_index (gtm->upf_apps, p[0]);
 				    update->app_index = app->id;
-				    upf_dpi_get_db_id(app->id, &update->dpi_path_db_id,
-						      &update->dpi_host_db_id);
-				    gtp_debug("app_id: %s, DPI DB id %u",
-					      app->name, update->dpi_path_db_id);
+				    upf_adf_get_db_id(app->id, &update->adf_path_db_id,
+						      &update->adf_host_db_id);
+				    gtp_debug("app_id: %s, adf DB id %u",
+					      app->name, update->adf_path_db_id);
 				  }
 			}
 

@@ -120,7 +120,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
   while (n_left_from > 0)
     {
       upf_pdr_t * pdr = NULL;
-      upf_pdr_t * dpi_pdr = NULL;
+      upf_pdr_t * adf_pdr = NULL;
       upf_far_t * far = NULL;
       u32 n_left_to_next;
       vlib_buffer_t * b;
@@ -178,7 +178,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	    {
 	      if ((flow->initiator_direction != direction) && flow->app_index != ~0)
 	      {
-		pdr = upf_get_dpi_pdr_by_name(active, direction, flow->app_index);
+		pdr = upf_get_adf_pdr_by_name(active, direction, flow->app_index);
 		if (pdr)
 		  {
 		    flow->responder_pdr_id = pdr->id;
@@ -191,14 +191,14 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  if (pdr == NULL)
 	    {
 	      acl = is_ip4 ? active->sdf[direction].ip4 : active->sdf[direction].ip6;
-	      dpi_pdr = upf_get_highest_dpi_pdr(active, direction);
+	      adf_pdr = upf_get_highest_adf_pdr(active, direction);
 
 	  if (acl == NULL)
 	    {
 	      gtpu_intf_tunnel_key_t key;
 	      uword *p;
 
-	      if (dpi_pdr == NULL)
+	      if (adf_pdr == NULL)
 	        {
 	      key.src_intf = vnet_buffer (b)->gtpu.src_intf;
 	      key.teid = vnet_buffer (b)->gtpu.teid;
@@ -216,7 +216,7 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 		}
               else
                 {
-                  pdr = dpi_pdr;
+                  pdr = adf_pdr;
                 }
 	    }
 	  else
@@ -276,14 +276,14 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 
 		      if (pdr != NULL)
 		        {
-		          if (dpi_pdr != NULL)
+		          if (adf_pdr != NULL)
 		            {
-		              pdr = (pdr->precedence < dpi_pdr->precedence) ? pdr : dpi_pdr;
+		              pdr = (pdr->precedence < adf_pdr->precedence) ? pdr : adf_pdr;
 		            }
 		        }
 		      else
 		        {
-		          pdr = dpi_pdr;
+		          pdr = adf_pdr;
 		        }
 		    }
 		}

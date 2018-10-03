@@ -1,5 +1,5 @@
 /*
- * upf_adf.h - 3GPP TS 29.244 UPF DPI header file
+ * upf_adf.h - 3GPP TS 29.244 UPF adf header file
  *
  * Copyright (c) 2017 Travelping GmbH
  *
@@ -15,36 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __included_upf_dpi_h__
-#define __included_upf_dpi_h__
+#ifndef __included_upf_adf_h__
+#define __included_upf_adf_h__
 
 #include <stddef.h>
 #include <upf/upf.h>
 
-#define UPF_DPI_APPLICATION_NAME_LEN_MAX 64
+#define UPF_adf_APPLICATION_NAME_LEN_MAX 64
 
 typedef struct {
   /* App index */
   u32 index;
   /* Regex expression */
   regex_t rule;
-} upf_dpi_args_t;
+} upf_adf_args_t;
 
-int upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index);
-int upf_dpi_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index);
-int upf_dpi_remove(u32 db_index);
-int upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids);
+int upf_adf_add_multi_regex(upf_adf_args_t * args, u32 * db_index);
+int upf_adf_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index);
+int upf_adf_remove(u32 db_index);
+int upf_adf_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids);
 int upf_app_add_del (upf_main_t * sm, u8 * name, int add);
 int upf_rule_add_del (upf_main_t * sm, u8 * name, u32 id,
                       int add, upf_rule_args_t * args);
 void foreach_upf_flows (BVT (clib_bihash_kv) * kvp, void * arg);
 
-int upf_dpi_get_db_id(u32 app_index, u32 * path_db_index, u32 * host_db_index);
+int upf_adf_get_db_id(u32 app_index, u32 * path_db_index, u32 * host_db_index);
 
 #define MIN(x,y) (((x)<(y))?(x):(y))
 
 always_inline int
-upf_dpi_parse_ip4_packet(ip4_header_t * ip4, u32 path_db_id,
+upf_adf_parse_ip4_packet(ip4_header_t * ip4, u32 path_db_id,
                          u32 host_db_id, u32 * app_index)
 {
   int tcp_payload_len = 0;
@@ -94,7 +94,7 @@ upf_dpi_parse_ip4_packet(ip4_header_t * ip4, u32 path_db_id,
 
   uri_length = version - http;
 
-  res = upf_dpi_lookup(path_db_id, http,
+  res = upf_adf_lookup(path_db_id, http,
                        MIN(uri_length, tcp_payload_len),
                        &path_app_index);
 
@@ -111,7 +111,7 @@ upf_dpi_parse_ip4_packet(ip4_header_t * ip4, u32 path_db_id,
 
   host_length = host_end - host;
 
-  res = upf_dpi_lookup(host_db_id, host,
+  res = upf_adf_lookup(host_db_id, host,
                        MIN(host_length, tcp_payload_len),
                        &host_app_index);
 
@@ -127,7 +127,7 @@ upf_dpi_parse_ip4_packet(ip4_header_t * ip4, u32 path_db_id,
 }
 
 always_inline upf_pdr_t *
-upf_get_highest_dpi_pdr (struct rules * active, int direction)
+upf_get_highest_adf_pdr (struct rules * active, int direction)
 {
   upf_pdr_t *pdr = NULL;
   upf_pdr_t *pdr_iter = NULL;
@@ -172,16 +172,16 @@ upf_update_flow_app_index (flow_entry_t * flow, upf_pdr_t * pdr,
     {
       if (pdr->app_index != ~0)
         {
-          upf_dpi_parse_ip4_packet((ip4_header_t *)pl,
-                                   pdr->dpi_path_db_id,
-                                   pdr->dpi_host_db_id,
+          upf_adf_parse_ip4_packet((ip4_header_t *)pl,
+                                   pdr->adf_path_db_id,
+                                   pdr->adf_host_db_id,
                                    &flow->app_index);
         }
     }
 }
 
 always_inline upf_pdr_t *
-upf_get_dpi_pdr_by_name (struct rules * active, int direction, u32 app_index)
+upf_get_adf_pdr_by_name (struct rules * active, int direction, u32 app_index)
 {
   upf_pdr_t *pdr = NULL;
   upf_pdr_t *res = NULL;
@@ -209,7 +209,7 @@ upf_get_dpi_pdr_by_name (struct rules * active, int direction, u32 app_index)
   return res;
 }
 
-#endif /* __included_upf_dpi_h__ */
+#endif /* __included_upf_adf_h__ */
 
 /*
  * fd.io coding-style-patch-verification: ON

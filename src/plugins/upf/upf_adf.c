@@ -1,5 +1,5 @@
 /*
- * upf_adf.c - 3GPP TS 29.244 UPF DPI
+ * upf_adf.c - 3GPP TS 29.244 UPF adf
  *
  * Copyright (c) 2017 Travelping GmbH
  *
@@ -30,9 +30,9 @@
 #include <upf/upf_pfcp.h>
 
 #if CLIB_DEBUG > 0
-#define dpi_debug clib_warning
+#define adf_debug clib_warning
 #else
-#define dpi_debug(...)				\
+#define adf_debug(...)				\
   do { } while (0)
 #endif
 
@@ -42,17 +42,17 @@ typedef struct {
   u32 *flags;
   hs_database_t *database;
   hs_scratch_t *scratch;
-} upf_dpi_entry_t;
+} upf_adf_entry_t;
 
 typedef struct {
   int res;
   u32 id;
-} upf_dpi_cb_args_t;
+} upf_adf_cb_args_t;
 
-static upf_dpi_entry_t *upf_dpi_db = NULL;
+static upf_adf_entry_t *upf_adf_db = NULL;
 
 static void
-upf_dpi_cleanup_db_entry(upf_dpi_entry_t *entry)
+upf_adf_cleanup_db_entry(upf_adf_entry_t *entry)
 {
   hs_free_database(entry->database);
   hs_free_scratch(entry->scratch);
@@ -60,15 +60,15 @@ upf_dpi_cleanup_db_entry(upf_dpi_entry_t *entry)
   vec_free(entry->flags);
   vec_free(entry->ids);
 
-  memset(entry, 0, sizeof(upf_dpi_entry_t));
+  memset(entry, 0, sizeof(upf_adf_entry_t));
 }
 
 int
-upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
+upf_adf_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
 {
-  upf_dpi_entry_t *entry = NULL;
+  upf_adf_entry_t *entry = NULL;
 
-  entry = pool_elt_at_index (upf_dpi_db, db_index);
+  entry = pool_elt_at_index (upf_adf_db, db_index);
   if (!entry)
     return -1;
 
@@ -79,11 +79,11 @@ upf_dpi_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
 }
 
 int
-upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index)
+upf_adf_add_multi_regex(upf_adf_args_t * args, u32 * db_index)
 {
-  upf_dpi_entry_t *entry = NULL;
+  upf_adf_entry_t *entry = NULL;
   hs_compile_error_t *compile_err = NULL;
-  upf_dpi_args_t *arg = NULL;
+  upf_adf_args_t *arg = NULL;
   int error = 0;
 
   if (!args)
@@ -94,20 +94,20 @@ upf_dpi_add_multi_regex(upf_dpi_args_t * args, u32 * db_index)
 
   if (*db_index != ~0)
     {
-      entry = pool_elt_at_index (upf_dpi_db, *db_index);
+      entry = pool_elt_at_index (upf_adf_db, *db_index);
       if (!entry)
         return -1;
 
-      upf_dpi_cleanup_db_entry(entry);
+      upf_adf_cleanup_db_entry(entry);
     }
   else
     {
-      pool_get (upf_dpi_db, entry);
+      pool_get (upf_adf_db, entry);
       if (!entry)
         return -1;
 
       memset(entry, 0, sizeof(*entry));
-      *db_index = entry - upf_dpi_db;
+      *db_index = entry - upf_adf_db;
     }
 
   vec_foreach (arg, args)
@@ -139,7 +139,7 @@ done:
 }
 
 static int
-upf_dpi_event_handler(unsigned int id, unsigned long long from,
+upf_adf_event_handler(unsigned int id, unsigned long long from,
                                  unsigned long long to, unsigned int flags,
                                 void *ctx)
 {
@@ -147,7 +147,7 @@ upf_dpi_event_handler(unsigned int id, unsigned long long from,
   (void) to;
   (void) flags;
 
-  upf_dpi_cb_args_t *args = (upf_dpi_cb_args_t*)ctx;
+  upf_adf_cb_args_t *args = (upf_adf_cb_args_t*)ctx;
 
   args->id = id;
   args->res = 1;
@@ -156,21 +156,21 @@ upf_dpi_event_handler(unsigned int id, unsigned long long from,
 }
 
 int
-upf_dpi_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index)
+upf_adf_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index)
 {
-  upf_dpi_entry_t *entry = NULL;
+  upf_adf_entry_t *entry = NULL;
   int ret = 0;
-  upf_dpi_cb_args_t args = {};
+  upf_adf_cb_args_t args = {};
 
   if (db_index == ~0)
     return -1;
 
-  entry = pool_elt_at_index (upf_dpi_db, db_index);
+  entry = pool_elt_at_index (upf_adf_db, db_index);
   if (!entry)
     return -1;
 
   ret = hs_scan(entry->database, (const char*)str, length, 0, entry->scratch,
-                upf_dpi_event_handler, (void*)&args);
+                upf_adf_event_handler, (void*)&args);
   if (ret != HS_SUCCESS)
     return -1;
 
@@ -183,28 +183,28 @@ upf_dpi_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index)
 }
 
 int
-upf_dpi_remove(u32 db_index)
+upf_adf_remove(u32 db_index)
 {
-  upf_dpi_entry_t *entry = NULL;
+  upf_adf_entry_t *entry = NULL;
 
-  entry = pool_elt_at_index (upf_dpi_db, db_index);
+  entry = pool_elt_at_index (upf_adf_db, db_index);
   if (!entry)
     return -1;
 
-  upf_dpi_cleanup_db_entry(entry);
+  upf_adf_cleanup_db_entry(entry);
 
-  pool_put (upf_dpi_db, entry);
+  pool_put (upf_adf_db, entry);
 
   return 0;
 }
 
 static void
-upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args, u8 path)
+upf_add_rules(u32 app_index, upf_adf_app_t *app, upf_adf_args_t ** args, u8 path)
 {
   u32 index = 0;
   u32 rule_index = 0;
   upf_adr_t *rule = NULL;
-  upf_dpi_args_t arg;
+  upf_adf_args_t arg;
 
   /* *INDENT-OFF* */
   hash_foreach(rule_index, index, app->rules_by_id,
@@ -229,22 +229,22 @@ upf_add_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args, u8 path
 }
 
 static inline void
-upf_add_path_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args)
+upf_add_path_rules(u32 app_index, upf_adf_app_t *app, upf_adf_args_t ** args)
 {
   return upf_add_rules(app_index, app, args, 1);
 }
 
 static inline void
-upf_add_host_rules(u32 app_index, upf_dpi_app_t *app, upf_dpi_args_t ** args)
+upf_add_host_rules(u32 app_index, upf_adf_app_t *app, upf_adf_args_t ** args)
 {
   return upf_add_rules(app_index, app, args, 0);
 }
 
 int
-upf_dpi_get_db_id(u32 app_index, u32 * path_db_index, u32 * host_db_index)
+upf_adf_get_db_id(u32 app_index, u32 * path_db_index, u32 * host_db_index)
 {
   upf_main_t * sm = &upf_main;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
 
   app = pool_elt_at_index(sm->upf_apps, app_index);
 
@@ -255,13 +255,13 @@ upf_dpi_get_db_id(u32 app_index, u32 * path_db_index, u32 * host_db_index)
 }
 
 static int
-upf_dpi_create_update_db(u8 * app_name, u32 * path_db_index, 
+upf_adf_create_update_db(u8 * app_name, u32 * path_db_index, 
                          u32 * host_db_index)
 {
   uword *p = NULL;
-  upf_dpi_args_t *args = NULL;
+  upf_adf_args_t *args = NULL;
   upf_main_t * sm = &upf_main;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   int res = 0;
 
   p = hash_get_mem (sm->upf_app_by_name, app_name);
@@ -276,7 +276,7 @@ upf_dpi_create_update_db(u8 * app_name, u32 * path_db_index,
   if (!args)
     return -1;
 
-  res = upf_dpi_add_multi_regex(args, path_db_index);
+  res = upf_adf_add_multi_regex(args, path_db_index);
 
   vec_free(args);
 
@@ -285,7 +285,7 @@ upf_dpi_create_update_db(u8 * app_name, u32 * path_db_index,
   if (!args)
     return -1;
 
-  res = upf_dpi_add_multi_regex(args, host_db_index);
+  res = upf_adf_add_multi_regex(args, host_db_index);
 
   vec_free(args);
 
@@ -293,7 +293,7 @@ upf_dpi_create_update_db(u8 * app_name, u32 * path_db_index,
 }
 
 static void
-upf_dpi_all_pdr_update(u32 app_index)
+upf_adf_all_pdr_update(u32 app_index)
 {
   upf_main_t *gtm = &upf_main;
   upf_session_t *sess = NULL;
@@ -312,8 +312,8 @@ upf_dpi_all_pdr_update(u32 app_index)
 
          if (pdr->app_index == app_index)
          {
-           upf_dpi_get_db_id(app_index, &pdr->dpi_path_db_id,
-                             &pdr->dpi_host_db_id);
+           upf_adf_get_db_id(app_index, &pdr->adf_path_db_id,
+                             &pdr->adf_host_db_id);
          }
        }
   }));
@@ -321,7 +321,7 @@ upf_dpi_all_pdr_update(u32 app_index)
 }
 
 static clib_error_t *
-upf_dpi_app_add_command_fn (vlib_main_t * vm,
+upf_adf_app_add_command_fn (vlib_main_t * vm,
                             unformat_input_t * input,
                             vlib_cli_command_t * cmd)
 {
@@ -335,7 +335,7 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
   u16 pdr_id = 0;
   u8 add_flag = ~0;
   upf_main_t *gtm = &upf_main;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   uword *p = NULL;
 
   /* Get a line of input. */
@@ -388,18 +388,18 @@ upf_dpi_app_add_command_fn (vlib_main_t * vm,
 
   if (add_flag == 0)
     {
-      res = upf_dpi_get_db_id(app->id, &pdr->dpi_path_db_id, &pdr->dpi_host_db_id);
+      res = upf_adf_get_db_id(app->id, &pdr->adf_path_db_id, &pdr->adf_host_db_id);
     }
   else if (add_flag == 1)
     {
-      res = upf_dpi_get_db_id(app->id, &pdr->dpi_path_db_id, &pdr->dpi_host_db_id);
+      res = upf_adf_get_db_id(app->id, &pdr->adf_path_db_id, &pdr->adf_host_db_id);
     }
 
   if (res == 0)
     vlib_cli_output (vm, "path DB id: %u, host DB id: %u",
-                     pdr->dpi_path_db_id, pdr->dpi_host_db_id);
+                     pdr->adf_path_db_id, pdr->adf_host_db_id);
   else
-    vlib_cli_output (vm, "Could not build DPI DB");
+    vlib_cli_output (vm, "Could not build adf DB");
 
 done:
   vec_free (name);
@@ -409,16 +409,16 @@ done:
 }
 
 /* *INDENT-OFF* */
-VLIB_CLI_COMMAND (upf_dpi_app_add_command, static) =
+VLIB_CLI_COMMAND (upf_adf_app_add_command, static) =
 {
-  .path = "upf dpi app",
-  .short_help = "upf dpi app <add|update> session <id> pdr <id> name <app name>",
-  .function = upf_dpi_app_add_command_fn,
+  .path = "upf adf app",
+  .short_help = "upf adf app <add|update> session <id> pdr <id> name <app name>",
+  .function = upf_adf_app_add_command_fn,
 };
 /* *INDENT-ON* */
 
 static clib_error_t *
-upf_dpi_url_test_command_fn (vlib_main_t * vm,
+upf_adf_url_test_command_fn (vlib_main_t * vm,
                              unformat_input_t * input,
                              vlib_cli_command_t * cmd)
 {
@@ -427,7 +427,7 @@ upf_dpi_url_test_command_fn (vlib_main_t * vm,
   clib_error_t *error = NULL;
   u32 app_index = 0;
   u32 id = 0;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   upf_main_t * sm = &upf_main;
 
   /* Get a line of input. */
@@ -448,7 +448,7 @@ upf_dpi_url_test_command_fn (vlib_main_t * vm,
         }
     }
 
-  upf_dpi_lookup(id, url, vec_len(url), &app_index);
+  upf_adf_lookup(id, url, vec_len(url), &app_index);
   if (app_index != ~0)
     {
       app = pool_elt_at_index (sm->upf_apps, app_index);
@@ -470,16 +470,16 @@ done:
 }
 
 /* *INDENT-OFF* */
-VLIB_CLI_COMMAND (upf_dpi_url_test_command, static) =
+VLIB_CLI_COMMAND (upf_adf_url_test_command, static) =
 {
-  .path = "upf dpi test db",
-  .short_help = "upf dpi test db <id> url <url>",
-  .function = upf_dpi_url_test_command_fn,
+  .path = "upf adf test db",
+  .short_help = "upf adf test db <id> url <url>",
+  .function = upf_adf_url_test_command_fn,
 };
 /* *INDENT-ON* */
 
 static clib_error_t *
-upf_dpi_show_db_command_fn (vlib_main_t * vm,
+upf_adf_show_db_command_fn (vlib_main_t * vm,
                             unformat_input_t * input,
                             vlib_cli_command_t * cmd)
 {
@@ -494,7 +494,7 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
   u32 *ids = NULL;
   int i = 0;
   u32 app_id = 0;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   upf_main_t * sm = &upf_main;
   uword *p = NULL;
 
@@ -524,14 +524,14 @@ upf_dpi_show_db_command_fn (vlib_main_t * vm,
 
   app = pool_elt_at_index (sm->upf_apps, p[0]);
 
-  res = upf_dpi_get_db_id(app->id, &path_id, &host_id);
+  res = upf_adf_get_db_id(app->id, &path_id, &host_id);
   if (res < 0 || path_id == ~0)
     {
       error = clib_error_return (0, "DB does not exist...");
       goto done;
     }
 
-  res = upf_dpi_get_db_contents(path_id, &expressions, &ids);
+  res = upf_adf_get_db_contents(path_id, &expressions, &ids);
   if (res == 0)
     {
       for (i = 0; i < vec_len(expressions); i++)
@@ -560,11 +560,11 @@ done:
 }
 
 /* *INDENT-OFF* */
-VLIB_CLI_COMMAND (upf_dpi_show_db_command, static) =
+VLIB_CLI_COMMAND (upf_adf_show_db_command, static) =
 {
-  .path = "show upf dpi app",
-  .short_help = "show upf dpi app <name>",
-  .function = upf_dpi_show_db_command_fn,
+  .path = "show upf adf app",
+  .short_help = "show upf adf app <name>",
+  .function = upf_adf_show_db_command_fn,
 };
 /* *INDENT-ON* */
 
@@ -600,7 +600,7 @@ static int
 vnet_upf_app_add_del(u8 * name, u8 add)
 {
   upf_main_t *sm = &upf_main;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   u32 index = 0;
   u32 rule_index = 0;
   uword *p = NULL;
@@ -640,8 +640,8 @@ vnet_upf_app_add_del(u8 * name, u8 add)
       }));
       /* *INDENT-ON* */
 
-      upf_dpi_remove(app->path_db_index);
-      upf_dpi_remove(app->host_db_index);
+      upf_adf_remove(app->path_db_index);
+      upf_adf_remove(app->host_db_index);
       vec_free (app->name);
       hash_free(app->rules_by_id);
       pool_free(app->rules);
@@ -779,7 +779,7 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
 {
   upf_main_t *sm = &upf_main;
   uword *p = NULL;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   upf_adr_t *rule = NULL;
   int res = 0;
 
@@ -817,12 +817,12 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
       pool_put (app->rules, rule);
     }
 
-  res = upf_dpi_create_update_db(app_name, &app->path_db_index,
+  res = upf_adf_create_update_db(app_name, &app->path_db_index,
                                  &app->host_db_index);
   if (res < 0)
     return res;
 
-  upf_dpi_all_pdr_update(app->id);
+  upf_adf_all_pdr_update(app->id);
 
   return 0;
 }
@@ -936,7 +936,7 @@ VLIB_CLI_COMMAND (upf_application_rule_add_del_command, static) =
 /* *INDENT-ON* */
 
 static void
-upf_show_rules(vlib_main_t * vm, upf_dpi_app_t * app)
+upf_show_rules(vlib_main_t * vm, upf_adf_app_t * app)
 {
   u32 index = 0;
   u32 rule_index = 0;
@@ -966,7 +966,7 @@ upf_show_app_command_fn (vlib_main_t * vm,
   u8 *name = NULL;
   uword *p = NULL;
   clib_error_t *error = NULL;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   upf_main_t * sm = &upf_main;
 
   /* Get a line of input. */
@@ -1051,7 +1051,7 @@ upf_show_apps_command_fn (vlib_main_t * vm,
   /* *INDENT-OFF* */
   hash_foreach(name, index, sm->upf_app_by_name,
   ({
-     upf_dpi_app_t *app = NULL;
+     upf_adf_app_t *app = NULL;
      app = pool_elt_at_index(sm->upf_apps, index);
      vlib_cli_output (vm, "app: %v", app->name);
 
@@ -1084,7 +1084,7 @@ foreach_upf_flows (BVT (clib_bihash_kv) * kvp,
   flowtable_per_session_t *fmt = arg;
   u32 ht_line_head_index = (u32) kvp->value;
   flowtable_main_t * fm = &flowtable_main;
-  upf_dpi_app_t *app = NULL;
+  upf_adf_app_t *app = NULL;
   u8 *app_name = NULL;
   upf_main_t * sm = &upf_main;
   vlib_main_t *vm = sm->vlib_main;
