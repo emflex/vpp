@@ -28,14 +28,7 @@
   do { } while (0)
 #endif
 
-typedef struct {
-  /* App index */
-  u32 index;
-  /* Regex expression */
-  regex_t rule;
-} upf_adf_args_t;
-
-int upf_adf_add_multi_regex(upf_adf_args_t * args, u32 * db_index);
+int upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index);
 int upf_adf_lookup(u32 db_index, u8 * str, uint16_t length, u32 * app_index);
 int upf_adf_remove(u32 db_index);
 int upf_adf_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids);

@@ -79,18 +79,14 @@ upf_adf_get_db_contents(u32 db_index, regex_t ** expressions, u32 ** ids)
 }
 
 int
-upf_adf_add_multi_regex(upf_adf_args_t * args, u32 * db_index)
+upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index)
 {
   upf_adf_entry_t *entry = NULL;
   hs_compile_error_t *compile_err = NULL;
-  upf_adf_args_t *arg = NULL;
   int error = 0;
-
-  if (!args)
-    return -1;
-
-  if (vec_len(args) == 0)
-    return -1;
+  u32 index = 0;
+  u32 rule_index = 0;
+  upf_adr_t *rule = NULL;
 
   if (*db_index != ~0)
     {
@@ -110,12 +106,21 @@ upf_adf_add_multi_regex(upf_adf_args_t * args, u32 * db_index)
       *db_index = entry - upf_adf_db;
     }
 
-  vec_foreach (arg, args)
-    {
-      vec_add1(entry->ids, arg->index);
-      vec_add1(entry->expressions, arg->rule);
-      vec_add1(entry->flags, HS_FLAG_DOTALL);
-    }
+  /* *INDENT-OFF* */
+  hash_foreach(rule_index, index, app->rules_by_id,
+  ({
+     regex_t regex = NULL;
+     rule = pool_elt_at_index(app->rules, index);
+
+     vec_add1(entry->ids, app->id);
+     vec_add(regex, rule->host, vec_len(rule->host));
+     vec_add(regex, rule->path, vec_len(rule->path));
+     vec_add1(entry->expressions, regex);
+     vec_add1(entry->flags, HS_FLAG_DOTALL);
+
+     adf_debug("app id: %u, regex: %v", app->id, regex);
+  }));
+  /* *INDENT-ON* */
 
   if (hs_compile_multi((const char **)entry->expressions, entry->flags, entry->ids,
                        vec_len(entry->expressions),
@@ -198,30 +203,6 @@ upf_adf_remove(u32 db_index)
   return 0;
 }
 
-static void
-upf_add_rules(u32 app_index, upf_adf_app_t *app, upf_adf_args_t ** args)
-{
-  u32 index = 0;
-  u32 rule_index = 0;
-  upf_adr_t *rule = NULL;
-  upf_adf_args_t arg;
-
-  /* *INDENT-OFF* */
-  hash_foreach(rule_index, index, app->rules_by_id,
-  ({
-     rule = pool_elt_at_index(app->rules, index);
-
-     arg.index = app_index;
-     vec_add(arg.rule, rule->host, vec_len(rule->host));
-     vec_add(arg.rule, rule->path, vec_len(rule->path));
-
-     adf_debug("regex: %v", arg.rule);
-
-     vec_add1(*args, arg);
-  }));
-  /* *INDENT-ON* */
-}
-
 int
 upf_adf_get_db_id(u32 app_index, u32 * db_index)
 {
@@ -239,7 +220,6 @@ static int
 upf_adf_create_update_db(u8 * app_name, u32 * db_index)
 {
   uword *p = NULL;
-  upf_adf_args_t *args = NULL;
   upf_main_t * sm = &upf_main;
   upf_adf_app_t *app = NULL;
   int res = 0;
@@ -251,14 +231,7 @@ upf_adf_create_update_db(u8 * app_name, u32 * db_index)
 
   app = pool_elt_at_index(sm->upf_apps, p[0]);
 
-  upf_add_rules(p[0], app, &args);
-
-  if (!args)
-    return -1;
-
-  res = upf_adf_add_multi_regex(args, db_index);
-
-  vec_free(args);
+  res = upf_adf_add_multi_regex(app, db_index);
 
   return res;
 }
