@@ -60,6 +60,7 @@ upf_adf_parse_ip4_packet(ip4_header_t * ip4, u32 db_id, u32 * app_index)
   u16 uri_length = 0;
   u16 host_length = 0;
   u8 *url = NULL;
+  int res = 0;
 
   if (db_id == ~0)
     return -1;
@@ -92,9 +93,6 @@ upf_adf_parse_ip4_packet(ip4_header_t * ip4, u32 db_id, u32 * app_index)
 
   uri_length = version - http;
 
-  vec_add(url, "http://", sizeof("http://"));
-  vec_add(url, http, uri_length);
-
   host = (u8*)strstr((const char*)http, "Host:");
   if (host == NULL)
     return -1;
@@ -107,15 +105,17 @@ upf_adf_parse_ip4_packet(ip4_header_t * ip4, u32 db_id, u32 * app_index)
 
   host_length = host_end - host;
 
+  vec_add(url, "http://", sizeof("http://"));
   vec_add(url, host, host_length);
+  vec_add(url, http, uri_length);
 
   adf_debug("URL: %v", url);
 
-  return upf_adf_lookup(db_id, host,
-                       MIN(host_length, tcp_payload_len),
-                       app_index);
+  res = upf_adf_lookup(db_id, url, vec_len(url), app_index);
 
-  return 0;
+  vec_free(url);
+
+  return res;
 }
 
 always_inline upf_pdr_t *
