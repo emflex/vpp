@@ -114,11 +114,11 @@ upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index)
 
      vec_add1(entry->ids, app->id);
 
-     vec_add(regex, ".*\\Q", sizeof(".*\\Q"));
+     vec_add(regex, ".*\\Q", 4);
      vec_add(regex, rule->host, vec_len(rule->host));
-     vec_add(regex, "\\E.*\\Q", sizeof("\\E.*\\Q"));
+     vec_add(regex, "\\E.*\\Q", 6);
      vec_add(regex, rule->path, vec_len(rule->path));
-     vec_add(regex, "\\E.*", sizeof("\\E.*"));
+     vec_add(regex, "\\E.*", 4);
      vec_add1(regex, 0);
 
      adf_debug("app id: %u, regex: %s", app->id, regex);
