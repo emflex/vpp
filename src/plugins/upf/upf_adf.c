@@ -104,7 +104,7 @@ upf_adf_db_ref_cnt_check_zero(u32 db_index)
   upf_adf_entry_t *entry = NULL;
 
   if (db_index == ~0)
-    return -1;
+    return 1;
 
   entry = pool_elt_at_index (upf_adf_db, db_index);
   if (!entry)
@@ -145,9 +145,6 @@ upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index)
     {
       entry = pool_elt_at_index (upf_adf_db, *db_index);
       if (!entry)
-        return -1;
-
-      if (upf_adf_db_ref_cnt_check_zero(*db_index) != 1)
         return -1;
 
       upf_adf_cleanup_db_entry(entry);
@@ -767,6 +764,9 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
 
   app = pool_elt_at_index (sm->upf_apps, p[0]);
 
+  if (upf_adf_db_ref_cnt_check_zero(app->db_index) != 1)
+    return VNET_API_INSTANCE_IN_USE;
+
   p = hash_get_mem (app->rules_by_id, &rule_index);
 
   if (add)
@@ -885,6 +885,10 @@ upf_application_rule_add_del_command_fn (vlib_main_t * vm,
 
     case VNET_API_ERROR_NO_SUCH_ENTRY:
       error = clib_error_return (0, "application or rule does not exist...");
+      break;
+
+    case VNET_API_INSTANCE_IN_USE:
+      error = clib_error_return (0, "application is in use...");
       break;
 
     default:
