@@ -765,7 +765,7 @@ vnet_upf_rule_add_del(u8 * app_name, u32 rule_index, u8 add,
   app = pool_elt_at_index (sm->upf_apps, p[0]);
 
   if (upf_adf_db_ref_cnt_check_zero(app->db_index) != 1)
-    return VNET_API_INSTANCE_IN_USE;
+    return VNET_API_ERROR_INSTANCE_IN_USE;
 
   p = hash_get_mem (app->rules_by_id, &rule_index);
 
@@ -887,7 +887,7 @@ upf_application_rule_add_del_command_fn (vlib_main_t * vm,
       error = clib_error_return (0, "application or rule does not exist...");
       break;
 
-    case VNET_API_INSTANCE_IN_USE:
+    case VNET_API_ERROR_INSTANCE_IN_USE:
       error = clib_error_return (0, "application is in use...");
       break;
 
