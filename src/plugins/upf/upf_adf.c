@@ -125,7 +125,7 @@ upf_adf_add_multi_regex(upf_adf_app_t * app, u32 * db_index)
 
      vec_add1(entry->expressions, regex);
 
-     vec_add1(entry->flags, HS_FLAG_DOTALL | HS_FLAG_ALLOWEMPTY);
+     vec_add1(entry->flags, HS_FLAG_SINGLEMATCH);
   }));
   /* *INDENT-ON* */
 
