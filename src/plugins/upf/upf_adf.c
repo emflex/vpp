@@ -1204,7 +1204,7 @@ done:
 VLIB_CLI_COMMAND (upf_flow_timeout_command, static) =
 {
   .path = "upf flow timeout",
-  .short_help = "upf flow timeout default <seconds>",
+  .short_help = "upf flow timeout (default | ip4 | ip6 | icmp | udp | tcp) <seconds>",
   .function = upf_flow_timeout_command_fn,
 };
 /* *INDENT-ON* */
@@ -1275,7 +1275,7 @@ done:
 VLIB_CLI_COMMAND (upf_show_flow_timeout_command, static) =
 {
   .path = "show upf flow timeout",
-  .short_help = "upf flow timeout default",
+  .short_help = "upf flow timeout (default | ip4 | ip6 | icmp | udp | tcp)",
   .function = upf_show_flow_timeout_command_fn,
 };
 /* *INDENT-ON* */
