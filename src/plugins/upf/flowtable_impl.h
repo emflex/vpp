@@ -373,33 +373,33 @@ flowtable_timelife_calculate(flowtable_main_t * fm,
   if (is_ip4)
     {
       proto = sig->s.ip4.proto;
-      if (fm->timer_ip4_lifetime != ~0)
+      if (fm->timer_ip4_lifetime != 0)
           timelife = fm->timer_ip4_lifetime;
     }
   else
     {
       proto = sig->s.ip6.proto;
-      if (fm->timer_ip6_lifetime != ~0)
+      if (fm->timer_ip6_lifetime != 0)
         timelife = fm->timer_ip6_lifetime;
     }
 
   if (proto == IP_PROTOCOL_ICMP)
     {
-      if (fm->timer_icmp_lifetime != ~0)
+      if (fm->timer_icmp_lifetime != 0)
         {
           timelife = fm->timer_icmp_lifetime;
         }
     }
   else if (proto == IP_PROTOCOL_UDP)
     {
-      if (fm->timer_udp_lifetime != ~0)
+      if (fm->timer_udp_lifetime != 0)
         {
           timelife = fm->timer_udp_lifetime;
         }
     }
   else if (proto == IP_PROTOCOL_TCP)
     {
-      if (fm->timer_tcp_lifetime != ~0)
+      if (fm->timer_tcp_lifetime != 0)
         {
           timelife = fm->timer_tcp_lifetime;
         }

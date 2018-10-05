@@ -138,7 +138,7 @@ typedef struct flow_entry {
 } flow_entry_t;
 
 /* Timers (in seconds) */
-#define TIMER_DEFAULT_LIFETIME (60)
+#define TIMER_DEFAULT_LIFETIME (600)
 #define TIMER_MAX_LIFETIME (3000)
 
 /* Default max number of flows to expire during one run.

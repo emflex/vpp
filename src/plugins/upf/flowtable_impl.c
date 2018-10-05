@@ -98,11 +98,11 @@ flowtable_init(vlib_main_t * vm)
 
   /* init timers */
   fm->timer_default_lifetime = TIMER_DEFAULT_LIFETIME;
-  fm->timer_ip4_lifetime = ~0;
-  fm->timer_ip6_lifetime = ~0;
-  fm->timer_icmp_lifetime = ~0;
-  fm->timer_udp_lifetime = ~0;
-  fm->timer_tcp_lifetime = ~0;
+  fm->timer_ip4_lifetime = 0;
+  fm->timer_ip6_lifetime = 0;
+  fm->timer_icmp_lifetime = 0;
+  fm->timer_udp_lifetime = 0;
+  fm->timer_tcp_lifetime = 0;
   fm->timer_max_lifetime = TIMER_MAX_LIFETIME;
 
   return error;
