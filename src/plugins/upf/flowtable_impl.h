@@ -563,7 +563,8 @@ flow_tcp_get_lifetime(tcp_state_t state, int is_ip4)
 {
   flowtable_main_t * fm = &flowtable_main;
 
-  if (state == TCP_STATE_ESTABLISHED)
+  if ((state == TCP_STATE_ESTABLISHED) ||
+      (state == TCP_STATE_START))
     {
       return flowtable_timelife_calculate(fm, IP_PROTOCOL_TCP, is_ip4);
     }
