@@ -154,7 +154,10 @@ upf_classify (vlib_main_t * vm, vlib_node_runtime_t * node,
 	  pl = vlib_buffer_get_current(b) + vnet_buffer (b)->gtpu.data_offset;
 
 	  flowtable_get_flow(pl, &sess->fmt, &flow, is_ip4, direction, current_time);
-	  is_http_req = upf_check_http_req(pl, is_ip4);
+	  if (flow->initiator_direction == direction)
+	    {
+	      is_http_req = upf_check_http_req(pl, is_ip4);
+	    }
 	
 	  gtp_debug("initiator direction: %u, packet direction: %u",
 		    flow->initiator_direction, direction);
